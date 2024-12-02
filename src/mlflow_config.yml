@@ -1,0 +1,23 @@
+experiment_name: gat cora
+dataset: cora
+out_dimenstions: 7
+hyperopt:
+  direction: maximize
+  n_trials: 10
+  study_name: gat_hyperopt
+mlflow:
+  registry_uri: file:./mlruns
+  tracking_uri: file:./mlruns
+model:
+  dropout: 0.3
+  hidden_channels: 8
+  num_heads: 4
+optimizer:
+  lr: 0.01
+  name: adam
+training:
+  device: cpu
+  early_stopping_patience: 10
+  epochs: 1500
+  train_split: 0.8
+  val_split: 0.2
