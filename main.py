@@ -15,6 +15,9 @@ def main():
     nodes = cora_dataset.node_features.numpy()  # Convert PyTorch tensor to NumPy
     labels = cora_dataset.labels.numpy()        # Convert PyTorch tensor to NumPy
 
+    
+    edges = cora_dataset.edges
+
     # Ensure the logs directory exists
     os.makedirs("logs", exist_ok=True)
 
