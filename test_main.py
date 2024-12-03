@@ -3,7 +3,9 @@ import torch
 from torch_geometric.utils import k_hop_subgraph
 
 # URL of your local FastAPI endpoint
-URL = "http://localhost:8000/predict/"
+#URL = "http://localhost:8080/predict/"
+
+CLOUD_URL = "https://cora-gat-image-196616273613.europe-west10.run.app/predict/"
 
 
 def create_large_graph(num_nodes=50, num_features=1433):
@@ -132,7 +134,7 @@ def test_predict_endpoint(target_node, num_hops=3):
     try:
         # Send POST request to the prediction endpoint
         print("Sending Subgraph to Prediction Endpoint...")
-        response = requests.post(URL, json=input_data_dict)
+        response = requests.post(CLOUD_URL, json=input_data_dict)
 
         # Check response status
         response.raise_for_status()
@@ -153,7 +155,8 @@ def test_predict_endpoint(target_node, num_hops=3):
 
 # Run the test
 if __name__ == "__main__":
-    target_node = 10  # Specify the node to predict
+
+    target_node = 11  # Specify the node to predict
     result, target_node_idx = test_predict_endpoint(target_node)
     target_class_probabilities = result['class_probabilities'][target_node_idx]
     predicted_class = target_class_probabilities.index(max(target_class_probabilities))

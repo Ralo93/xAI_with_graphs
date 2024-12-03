@@ -5,6 +5,8 @@ import torch.nn.functional as F
 from torch_geometric.nn import GATConv
 from pathlib import Path
 
+
+# Use forward slashes so it can run on windows and linux
 MODEL_FILE_NAME = 'app/mlruns/10/ec80f1fe720946fe9f11126ec5831338/artifacts/model/data/model.pth'
 
 class GAT(torch.nn.Module):
