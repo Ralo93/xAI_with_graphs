@@ -69,6 +69,7 @@ class GAT(torch.nn.Module):
             dropout=dropout
         )
 
+    # This is what we expect in the predict method using fastapi
     def forward(self, x, edge_index):
             # Save input for skip connection
             x_skip = x

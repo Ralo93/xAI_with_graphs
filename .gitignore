@@ -8,6 +8,8 @@ __pycache__/
 data
 .envs
 logs
+mlflow.db
+
 
 # C extensions
 *.so

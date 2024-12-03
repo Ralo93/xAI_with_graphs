@@ -22,8 +22,6 @@ class Dataset:
         return
     
 
-
-
 class CoraDataset:
     def __init__(self, npz_file, add_self_loops=False, device='cpu'):
         """
