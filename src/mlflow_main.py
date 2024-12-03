@@ -25,7 +25,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-
 class GAT(torch.nn.Module):
     def __init__(self, in_channels: int, hidden_channels: int, out_channels: int, 
                  num_heads: int = 4, dropout: float = 0.3, edge_dim: int = None):

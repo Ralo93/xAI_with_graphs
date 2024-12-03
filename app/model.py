@@ -5,8 +5,7 @@ import torch.nn.functional as F
 from torch_geometric.nn import GATConv
 from pathlib import Path
 
-MODEL_FILE_NAME = r'app\mlruns\10\ec80f1fe720946fe9f11126ec5831338\artifacts\model\data\model.pth'
-
+MODEL_FILE_NAME = 'app/mlruns/10/ec80f1fe720946fe9f11126ec5831338/artifacts/model/data/model.pth'
 
 class GAT(torch.nn.Module):
     def __init__(self, in_channels: int, hidden_channels: int, out_channels: int, 
