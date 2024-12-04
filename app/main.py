@@ -48,6 +48,7 @@ class PredictionResponse(BaseModel):
     class_probabilities: List[List[float]]  # Probabilities for each node
     attention_weights: List[Any]  # Attention weights from each layer
 
+
 @app.post("/predict/", response_model=PredictionResponse)
 async def predict(input_data: GraphInputData):
     try:

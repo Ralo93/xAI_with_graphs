@@ -93,8 +93,6 @@ def visualize_analysis_with_layers(subgraph_data, analysis_results, target, pred
 
 
 
-from pyvis.network import Network
-
 def visualize_subgraph_pyvis(subgraph_data, save=True):
     """
     Visualize the extracted subgraph using Pyvis.

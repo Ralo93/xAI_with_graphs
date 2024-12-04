@@ -25,7 +25,7 @@ def test_predict_endpoint(target_node, num_hops=3):
 
     # Extract the subgraph for the target node
     input_data_dict = extract_subgraph(
-        node_idx=target_node, num_hops=num_hops, node_features=node_features, edges=edges
+        node_idx=target_node, num_hops=num_hops, node_features=node_features, edges=edges, labels=labels
     )
 
     net = visualize_subgraph_pyvis(input_data_dict, save=False)
