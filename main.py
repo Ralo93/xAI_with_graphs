@@ -1,6 +1,5 @@
 from src.helpers.datasets import *
 import numpy as np
-import torch
 import os
 from app.model import *
 
@@ -13,8 +12,7 @@ def main():
     nodes_features = cora_dataset.node_features.numpy()  # Convert PyTorch tensor to NumPy
     labels = cora_dataset.labels.numpy()        # Convert PyTorch tensor to NumPy
     edges = cora_dataset.edges
-   
-
+    
     #TODO
     # Visualize the nodes/node features it in 2D
 
@@ -26,7 +24,6 @@ def main():
 
     # Visualize the enriched node features in 2D
 
-    
 
 
     exit()

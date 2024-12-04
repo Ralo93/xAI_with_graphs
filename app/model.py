@@ -11,7 +11,7 @@ MODEL_FILE_NAME = 'app/mlruns/10/ec80f1fe720946fe9f11126ec5831338/artifacts/mode
 
 class GAT(torch.nn.Module):
     def __init__(self, in_channels: int, hidden_channels: int, out_channels: int, 
-                 num_heads: int = 4, dropout: float = 0.3, edge_dim: int = None):
+                 num_heads: int = 5, dropout: float = 0.3, edge_dim: int = None):
         super().__init__()
         
         self.dropout = nn.Dropout(dropout)
@@ -61,6 +61,7 @@ class GAT(torch.nn.Module):
 
         # GAT layer 1
         x, alpha1 = self.gat1(x, edge_index, return_attention_weights=True)
+        #print(f"Alpha1 shape: {alpha1[1].shape}")  # Should be [num_edges, 5]
         x = F.elu(x)
         x = self.norm1(x)
         x = self.dropout(x)
@@ -69,18 +70,20 @@ class GAT(torch.nn.Module):
         x_skip = self.proj_skip(x_skip)  # Align dimensions for skip connection
         x = x + x_skip  # Add skip connection
         x, alpha2 = self.gat2(x, edge_index, return_attention_weights=True)
+        #print(f"Alpha2 shape: {alpha2[1].shape}")  # Should be [num_edges, 5]
         x = F.elu(x)
         x = self.norm2(x)
         x = self.dropout(x)
 
         # GAT layer 3
         x, alpha3 = self.gat3(x, edge_index, return_attention_weights=True)
+        #print(f"Alpha3 shape: {alpha3[1].shape}")  # Should be [num_edges, 5]
 
         return x, [alpha1, alpha2, alpha3]
     
 
 def get_raw_model(in_channels: int, hidden_channels: int, out_channels: int, 
-                  num_heads: int = 4, dropout: float = 0.3, edge_dim: int = None) -> GAT:
+                  num_heads: int = 5, dropout: float = 0.3, edge_dim: int = None) -> GAT:
     """
     Create a model with the same architecture as the one used during training, 
     but without any weights
@@ -99,7 +102,7 @@ def load_model(
     hidden_channels: int, 
     out_channels: int,
     model_path: str = None,
-    num_heads: int = 4, 
+    num_heads: int = 5, 
     dropout: float = 0.3, 
     edge_dim: int = None
 ) -> GAT:
@@ -135,7 +138,8 @@ def load_model(
     
     # Load the model weights
     try:
-        model = torch.load(model_path, map_location='cpu')
+        pass
+        #model = torch.load(model_path, map_location='cpu')
         #model.eval()
     except Exception as e:
         print(f"Error loading model weights: {e}")
@@ -151,6 +155,7 @@ if __name__ == "__main__":
     # Example parameters - adjust these to match your model
     model = load_model(
         in_channels=3,      # Adjust to your node feature dimension
+        num_heads=5, 
         hidden_channels=64, # Adjust to your model's hidden layer size
         out_channels=6,     # Number of output classes
         model_path=None     # Uses default path

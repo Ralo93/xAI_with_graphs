@@ -16,6 +16,7 @@ def load_model_in_main():
         out_channels=6,     # Number of output classes
         model_path=None     # Uses default path
         )
+
         return model
     except Exception as e:
         print(f"Failed to load the model: {e}")
@@ -38,11 +39,12 @@ class GraphInputData(BaseModel):
     edge_index: List[List[int]]       # Edge connections
 
 
-
 class PredictionResponse(BaseModel):
     """
     Structured prediction response
     """
+    edge_index: List[List[int]]
+    model_output: List[List[float]]
     class_probabilities: List[List[float]]  # Probabilities for each node
     attention_weights: List[Any]  # Attention weights from each layer
 
@@ -72,9 +74,17 @@ async def predict(input_data: GraphInputData):
             probabilities = [[float(p) for p in prob] for prob in probabilities]
             
             # Convert attention weights to a serializable format (e.g., lists)
-            attention_weights = [aw[0].cpu().numpy().tolist() for aw in attention_weights]
+            attention_weights = [aw[1].cpu().numpy().tolist() for aw in attention_weights]
+
+            # Debugging: Print shapes
+            print("Attention Weights Debugging:")
+            for i, aw in enumerate(attention_weights):
+                print(f"Layer {i+1}: {len(aw)} edges, {len(aw[0]) if len(aw) > 0 else 0} heads")
+
 
             return {
+                "edge_index": edge_index.tolist(),
+                "model_output": output.tolist(),
                 "class_probabilities": probabilities,
                 "attention_weights": attention_weights,
             }

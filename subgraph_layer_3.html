@@ -1,0 +1,127 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 800px;
+                 background-color: #222222;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "blue", "font": {"color": "white"}, "id": 0, "label": "Node 0", "shape": "dot", "size": 10, "title": "Node 0\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 1, "label": "Node 1", "shape": "dot", "size": 10, "title": "Node 1\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 2, "label": "Node 2", "shape": "dot", "size": 10, "title": "Node 2\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 3, "label": "Node 3", "shape": "dot", "size": 10, "title": "Node 3\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 4, "label": "Node 4", "shape": "dot", "size": 10, "title": "Node 4\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 5, "label": "Node 5", "shape": "dot", "size": 10, "title": "Node 5\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 6, "label": "Node 6", "shape": "dot", "size": 10, "title": "Node 6\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 7, "label": "Node 7", "shape": "dot", "size": 10, "title": "Node 7\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 8, "label": "Node 8", "shape": "dot", "size": 10, "title": "Node 8\nContribution: 0.0000"}, {"color": "red", "font": {"color": "white"}, "id": 9, "label": "Node 9", "shape": "dot", "size": 10, "title": "Node 9\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 10, "label": "Node 10", "shape": "dot", "size": 10, "title": "Node 10\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 11, "label": "Node 11", "shape": "dot", "size": 10, "title": "Node 11\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 12, "label": "Node 12", "shape": "dot", "size": 10, "title": "Node 12\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 13, "label": "Node 13", "shape": "dot", "size": 10, "title": "Node 13\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 14, "label": "Node 14", "shape": "dot", "size": 10, "title": "Node 14\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 15, "label": "Node 15", "shape": "dot", "size": 10, "title": "Node 15\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 16, "label": "Node 16", "shape": "dot", "size": 10, "title": "Node 16\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 17, "label": "Node 17", "shape": "dot", "size": 10, "title": "Node 17\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 18, "label": "Node 18", "shape": "dot", "size": 10, "title": "Node 18\nContribution: 0.0000"}, {"color": "yellow", "font": {"color": "white"}, "id": 19, "label": "Node 19", "shape": "dot", "size": 13.39833769297328, "title": "Node 19\nContribution: 0.0680"}, {"color": "blue", "font": {"color": "white"}, "id": 20, "label": "Node 20", "shape": "dot", "size": 10, "title": "Node 20\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 21, "label": "Node 21", "shape": "dot", "size": 10, "title": "Node 21\nContribution: 0.0000"}, {"color": "yellow", "font": {"color": "white"}, "id": 22, "label": "Node 22", "shape": "dot", "size": 11.672229598139563, "title": "Node 22\nContribution: 0.0334"}, {"color": "blue", "font": {"color": "white"}, "id": 23, "label": "Node 23", "shape": "dot", "size": 10, "title": "Node 23\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 24, "label": "Node 24", "shape": "dot", "size": 10, "title": "Node 24\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 25, "label": "Node 25", "shape": "dot", "size": 10, "title": "Node 25\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 26, "label": "Node 26", "shape": "dot", "size": 10, "title": "Node 26\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 27, "label": "Node 27", "shape": "dot", "size": 10, "title": "Node 27\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 28, "label": "Node 28", "shape": "dot", "size": 10, "title": "Node 28\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 29, "label": "Node 29", "shape": "dot", "size": 10, "title": "Node 29\nContribution: 0.0000"}, {"color": "yellow", "font": {"color": "white"}, "id": 30, "label": "Node 30", "shape": "dot", "size": 35.36192815799359, "title": "Node 30\nContribution: 0.5072"}, {"color": "blue", "font": {"color": "white"}, "id": 31, "label": "Node 31", "shape": "dot", "size": 10, "title": "Node 31\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 32, "label": "Node 32", "shape": "dot", "size": 10, "title": "Node 32\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 33, "label": "Node 33", "shape": "dot", "size": 10, "title": "Node 33\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 34, "label": "Node 34", "shape": "dot", "size": 10, "title": "Node 34\nContribution: 0.0000"}, {"color": "yellow", "font": {"color": "white"}, "id": 35, "label": "Node 35", "shape": "dot", "size": 11.56311519111043, "title": "Node 35\nContribution: 0.0313"}, {"color": "blue", "font": {"color": "white"}, "id": 36, "label": "Node 36", "shape": "dot", "size": 10, "title": "Node 36\nContribution: 0.0000"}, {"color": "blue", "font": {"color": "white"}, "id": 37, "label": "Node 37", "shape": "dot", "size": 10, "title": "Node 37\nContribution: 0.0000"}, {"color": "yellow", "font": {"color": "white"}, "id": 38, "label": "Node 38", "shape": "dot", "size": 22.46605391644689, "title": "Node 38\nContribution: 0.2493"}]);
+                  edges = new vis.DataSet([{"from": 4, "title": "Edge Weight: 0.0000", "to": 9, "width": 1}, {"from": 27, "title": "Edge Weight: 0.0000", "to": 5, "width": 1}, {"from": 12, "title": "Edge Weight: 0.0000", "to": 37, "width": 1}, {"from": 19, "title": "Edge Weight: 0.0000", "to": 3, "width": 1}, {"from": 32, "title": "Edge Weight: 0.0000", "to": 36, "width": 1}, {"from": 25, "title": "Edge Weight: 0.0000", "to": 4, "width": 1}, {"from": 22, "title": "Edge Weight: 0.0000", "to": 8, "width": 1}, {"from": 2, "title": "Edge Weight: 0.0000", "to": 8, "width": 1}, {"from": 35, "title": "Edge Weight: 0.0000", "to": 2, "width": 1}, {"from": 16, "title": "Edge Weight: 0.0000", "to": 7, "width": 1}, {"from": 24, "title": "Edge Weight: 0.0000", "to": 5, "width": 1}, {"from": 26, "title": "Edge Weight: 0.0000", "to": 38, "width": 1}, {"from": 23, "title": "Edge Weight: 0.0000", "to": 7, "width": 1}, {"from": 19, "title": "Edge Weight: 0.0000", "to": 35, "width": 1}, {"from": 13, "title": "Edge Weight: 0.0000", "to": 32, "width": 1}, {"from": 5, "title": "Edge Weight: 0.0000", "to": 5, "width": 1}, {"from": 5, "title": "Edge Weight: 0.0000", "to": 7, "width": 1}, {"from": 36, "title": "Edge Weight: 0.0000", "to": 10, "width": 1}, {"from": 20, "title": "Edge Weight: 0.0000", "to": 37, "width": 1}, {"from": 23, "title": "Edge Weight: 0.0000", "to": 9, "width": 1}, {"from": 1, "title": "Edge Weight: 0.0000", "to": 18, "width": 1}, {"from": 38, "title": "Edge Weight: 0.0000", "to": 35, "width": 1}, {"from": 9, "title": "Edge Weight: 0.0000", "to": 16, "width": 1}, {"from": 9, "title": "Edge Weight: 0.0000", "to": 25, "width": 1}, {"from": 6, "title": "Edge Weight: 0.0000", "to": 25, "width": 1}, {"from": 28, "title": "Edge Weight: 0.0000", "to": 25, "width": 1}, {"from": 16, "title": "Edge Weight: 0.0000", "to": 26, "width": 1}, {"from": 6, "title": "Edge Weight: 0.0000", "to": 34, "width": 1}, {"from": 26, "title": "Edge Weight: 0.0000", "to": 37, "width": 1}, {"from": 1, "title": "Edge Weight: 0.0000", "to": 8, "width": 1}, {"from": 13, "title": "Edge Weight: 0.0000", "to": 36, "width": 1}, {"from": 35, "title": "Edge Weight: 0.0000", "to": 17, "width": 1}, {"from": 22, "title": "Edge Weight: 0.0000", "to": 2, "width": 1}, {"from": 8, "title": "Edge Weight: 0.0068", "to": 11, "width": 1.0676647116120896}, {"from": 4, "title": "Edge Weight: 0.0000", "to": 32, "width": 1}, {"from": 38, "title": "Edge Weight: 0.0000", "to": 7, "width": 1}, {"from": 38, "title": "Edge Weight: 0.0000", "to": 1, "width": 1}, {"from": 14, "title": "Edge Weight: 0.0000", "to": 28, "width": 1}, {"from": 1, "title": "Edge Weight: 0.0000", "to": 3, "width": 1}, {"from": 22, "title": "Edge Weight: 0.0000", "to": 10, "width": 1}, {"from": 6, "title": "Edge Weight: 0.0000", "to": 35, "width": 1}, {"from": 0, "title": "Edge Weight: 0.0000", "to": 9, "width": 1}, {"from": 6, "title": "Edge Weight: 0.0000", "to": 0, "width": 1}, {"from": 10, "title": "Edge Weight: 0.0000", "to": 9, "width": 1}, {"from": 36, "title": "Edge Weight: 0.0000", "to": 22, "width": 1}, {"from": 18, "title": "Edge Weight: 0.0000", "to": 13, "width": 1}, {"from": 38, "title": "Edge Weight: 0.0000", "to": 14, "width": 1}, {"from": 33, "title": "Edge Weight: 0.0000", "to": 12, "width": 1}, {"from": 18, "title": "Edge Weight: 0.0000", "to": 5, "width": 1}, {"from": 22, "title": "Edge Weight: 0.0000", "to": 27, "width": 1}, {"from": 12, "title": "Edge Weight: 0.0000", "to": 12, "width": 1}, {"from": 29, "title": "Edge Weight: 0.0000", "to": 7, "width": 1}, {"from": 5, "title": "Edge Weight: 0.0000", "to": 25, "width": 1}, {"from": 9, "title": "Edge Weight: 0.0000", "to": 36, "width": 1}, {"from": 17, "title": "Edge Weight: 0.0000", "to": 16, "width": 1}, {"from": 30, "title": "Edge Weight: 0.0000", "to": 37, "width": 1}, {"from": 28, "title": "Edge Weight: 0.0000", "to": 19, "width": 1}, {"from": 21, "title": "Edge Weight: 0.0000", "to": 6, "width": 1}, {"from": 27, "title": "Edge Weight: 0.0000", "to": 6, "width": 1}, {"from": 11, "title": "Edge Weight: 0.0000", "to": 15, "width": 1}, {"from": 17, "title": "Edge Weight: 0.0000", "to": 22, "width": 1}, {"from": 3, "title": "Edge Weight: 0.0000", "to": 33, "width": 1}, {"from": 13, "title": "Edge Weight: 0.0000", "to": 31, "width": 1}, {"from": 13, "title": "Edge Weight: 0.0000", "to": 1, "width": 1}, {"from": 29, "title": "Edge Weight: 0.0000", "to": 10, "width": 1}, {"from": 33, "title": "Edge Weight: 0.0000", "to": 25, "width": 1}, {"from": 19, "title": "Edge Weight: 0.0000", "to": 36, "width": 1}, {"from": 27, "title": "Edge Weight: 0.0000", "to": 34, "width": 1}, {"from": 33, "title": "Edge Weight: 0.0000", "to": 1, "width": 1}, {"from": 15, "title": "Edge Weight: 0.0000", "to": 34, "width": 1}, {"from": 10, "title": "Edge Weight: 0.0000", "to": 17, "width": 1}, {"from": 30, "title": "Edge Weight: 0.0000", "to": 24, "width": 1}, {"from": 15, "title": "Edge Weight: 0.0000", "to": 0, "width": 1}, {"from": 0, "title": "Edge Weight: 0.0000", "to": 38, "width": 1}, {"from": 25, "title": "Edge Weight: 0.0000", "to": 21, "width": 1}, {"from": 35, "title": "Edge Weight: 0.0000", "to": 0, "width": 1}, {"from": 24, "title": "Edge Weight: 0.0000", "to": 29, "width": 1}, {"from": 11, "title": "Edge Weight: 0.0000", "to": 31, "width": 1}, {"from": 8, "title": "Edge Weight: 0.0000", "to": 17, "width": 1}, {"from": 7, "title": "Edge Weight: 0.0000", "to": 15, "width": 1}, {"from": 1, "title": "Edge Weight: 0.0000", "to": 34, "width": 1}, {"from": 38, "title": "Edge Weight: 0.0000", "to": 32, "width": 1}, {"from": 37, "title": "Edge Weight: 0.0000", "to": 23, "width": 1}, {"from": 37, "title": "Edge Weight: 0.0000", "to": 36, "width": 1}, {"from": 8, "title": "Edge Weight: 0.0000", "to": 4, "width": 1}, {"from": 31, "title": "Edge Weight: 0.0000", "to": 21, "width": 1}, {"from": 23, "title": "Edge Weight: 0.0000", "to": 31, "width": 1}, {"from": 38, "title": "Edge Weight: 0.0000", "to": 12, "width": 1}, {"from": 15, "title": "Edge Weight: 0.0000", "to": 1, "width": 1}, {"from": 3, "title": "Edge Weight: 0.0000", "to": 10, "width": 1}, {"from": 19, "title": "Edge Weight: 0.0000", "to": 29, "width": 1}, {"from": 28, "title": "Edge Weight: 0.0000", "to": 35, "width": 1}, {"from": 31, "title": "Edge Weight: 0.0000", "to": 8, "width": 1}, {"from": 16, "title": "Edge Weight: 0.0000", "to": 8, "width": 1}, {"from": 30, "title": "Edge Weight: 0.0000", "to": 32, "width": 1}, {"from": 19, "title": "Edge Weight: 0.0000", "to": 34, "width": 1}, {"from": 0, "title": "Edge Weight: 0.0000", "to": 0, "width": 1}, {"from": 1, "title": "Edge Weight: 0.0000", "to": 1, "width": 1}, {"from": 2, "title": "Edge Weight: 0.0000", "to": 2, "width": 1}, {"from": 3, "title": "Edge Weight: 0.0000", "to": 3, "width": 1}, {"from": 4, "title": "Edge Weight: 0.0000", "to": 4, "width": 1}, {"from": 6, "title": "Edge Weight: 0.0000", "to": 6, "width": 1}, {"from": 7, "title": "Edge Weight: 0.0000", "to": 7, "width": 1}, {"from": 8, "title": "Edge Weight: 0.0000", "to": 8, "width": 1}, {"from": 9, "title": "Edge Weight: 0.0000", "to": 9, "width": 1}, {"from": 10, "title": "Edge Weight: 0.0000", "to": 10, "width": 1}, {"from": 11, "title": "Edge Weight: 0.0000", "to": 11, "width": 1}, {"from": 13, "title": "Edge Weight: 0.0000", "to": 13, "width": 1}, {"from": 14, "title": "Edge Weight: 0.0068", "to": 14, "width": 1.0680893640937195}, {"from": 15, "title": "Edge Weight: 0.0000", "to": 15, "width": 1}, {"from": 16, "title": "Edge Weight: 0.0000", "to": 16, "width": 1}, {"from": 17, "title": "Edge Weight: 0.0000", "to": 17, "width": 1}, {"from": 18, "title": "Edge Weight: 0.0000", "to": 18, "width": 1}, {"from": 19, "title": "Edge Weight: 0.0000", "to": 19, "width": 1}, {"from": 20, "title": "Edge Weight: 0.1715", "to": 20, "width": 2.7151835285754227}, {"from": 21, "title": "Edge Weight: 0.0000", "to": 21, "width": 1}, {"from": 22, "title": "Edge Weight: 0.0000", "to": 22, "width": 1}, {"from": 23, "title": "Edge Weight: 0.0000", "to": 23, "width": 1}, {"from": 24, "title": "Edge Weight: 0.0000", "to": 24, "width": 1}, {"from": 25, "title": "Edge Weight: 0.0000", "to": 25, "width": 1}, {"from": 26, "title": "Edge Weight: 0.0000", "to": 26, "width": 1}, {"from": 27, "title": "Edge Weight: 0.0000", "to": 27, "width": 1}, {"from": 28, "title": "Edge Weight: 0.0069", "to": 28, "width": 1.0685732630773033}, {"from": 29, "title": "Edge Weight: 0.0000", "to": 29, "width": 1}, {"from": 30, "title": "Edge Weight: 0.1715", "to": 30, "width": 2.7151835285754227}, {"from": 31, "title": "Edge Weight: 0.0000", "to": 31, "width": 1}, {"from": 32, "title": "Edge Weight: 0.0000", "to": 32, "width": 1}, {"from": 33, "title": "Edge Weight: 0.0000", "to": 33, "width": 1}, {"from": 34, "title": "Edge Weight: 0.0000", "to": 34, "width": 1}, {"from": 35, "title": "Edge Weight: 0.0000", "to": 35, "width": 1}, {"from": 36, "title": "Edge Weight: 0.0000", "to": 36, "width": 1}, {"from": 37, "title": "Edge Weight: 0.0000", "to": 37, "width": 1}, {"from": 38, "title": "Edge Weight: 0.0000", "to": 38, "width": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {"physics": {"forceAtlas2Based": {"gravitationalConstant": -50, "centralGravity": 0.01, "springLength": 100, "springConstant": 0.08}, "minVelocity": 0.75, "solver": "forceAtlas2Based"}};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
