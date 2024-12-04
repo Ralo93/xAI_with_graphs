@@ -211,32 +211,42 @@ def visualize_analysis_with_layers(subgraph_data, analysis_results, target, pred
             contribution = next((n['normalized_contribution'] for n in graph_data['top_nodes'] if n['index'] == node), 0)
             size = 10 + contribution * 50
             color = 'red' if node == target else ('yellow' if node in [n['index'] for n in graph_data['top_nodes']] else 'blue')
+
+            if node == target:
+                label = 'target'
+            else:
+                label = f"Node {node}\nContribution: {contribution:.4f}" if contribution > 0 else None
+    
+
             net.add_node(
                 node, 
-                label=f"Node {node}",
+                label=label,
                 size=size, 
                 color=color,
-                title=f"Node {node}\nContribution: {contribution:.4f}"
+                title=f"Node {node}"
             )
         
         # Add edges
         for edge in subgraph_data['edge_index']:
             source, target = edge
             weight = next((e['normalized_weight'] for e in graph_data['top_edges'] if e['source'] == source and e['target'] == target), 0)
+
+            label = f"Edge Weight: {weight:.4f}" if weight > 0 else None
+    
             net.add_edge(
                 source, target, 
                 width=1 + weight * 10, 
-                title=f"Edge Weight: {weight:.4f}"
+                label=label
             )
         
         # Highlight predicted class
-        net.add_node(
-            target, 
-            label=f"Target Node {target} (Predicted Class: {predicted_class})",
-            size=20, 
-            color='green',
-            title=f"Target Node {target}\nPredicted Class: {predicted_class}"
-        )
+        #net.add_node(
+        #    target, 
+        #    label=f"Target Node {target} (Predicted Class: {predicted_class})",
+        #    size=20, 
+        #    color='green',
+        #    title=f"Target Node {target}\nPredicted Class: {predicted_class}"
+        #)
         
         return net
 
