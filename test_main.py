@@ -6,7 +6,7 @@ from src.helpers.datasets import *
 # URL of your local FastAPI endpoint
 URL = "http://localhost:8000/predict/"
 
-CLOUD_URL = "https://cora-gat-image-196616273613.europe-west10.run.app/predict/"
+#CLOUD_URL = "https://cora-gat-image-196616273613.europe-west10.run.app/predict/"
 
 
 def test_predict_endpoint(target_node, num_hops=3):
@@ -17,6 +17,11 @@ def test_predict_endpoint(target_node, num_hops=3):
 
     node_features= cora_dataset.node_features
     edges = cora_dataset.edges.t() # .t() because Cora...
+    labels = cora_dataset.labels
+
+    target_label = labels[target_node]
+
+    print(int(target_label))
 
     # Extract the subgraph for the target node
     input_data_dict = extract_subgraph(
@@ -63,7 +68,7 @@ def test_predict_endpoint(target_node, num_hops=3):
 # Run the test
 if __name__ == "__main__":
 
-    target_node = 2000  # Specify the node to predict
+    target_node = 5  # Specify the node to predict
     result, target_node_idx = test_predict_endpoint(target_node)
     target_class_probabilities = result['class_probabilities'][target_node_idx]
     predicted_class = target_class_probabilities.index(max(target_class_probabilities))

@@ -174,7 +174,7 @@ def create_large_graph(num_nodes=50, num_features=1433):
     return node_features, edges
 
 
-def extract_subgraph(node_idx, num_hops, node_features, edges):
+def extract_subgraph(node_idx, num_hops, node_features, edges, labels):
     """
     Extract a k-hop subgraph for the specified node index.
 
@@ -187,6 +187,9 @@ def extract_subgraph(node_idx, num_hops, node_features, edges):
     Returns:
         dict: Subgraph data with node features and edge index.
     """
+
+    #TODO Put the labels somewhere here
+    
     # Transpose edges for PyTorch Geometric compatibility
     edge_index = edges
 
