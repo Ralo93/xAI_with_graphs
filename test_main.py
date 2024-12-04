@@ -1,6 +1,6 @@
 import requests
-from utils import *
-from visualizing import *
+from src.helpers.utils import *
+from src.helpers.visualizing import *
 from src.helpers.datasets import *
 
 # URL of your local FastAPI endpoint
