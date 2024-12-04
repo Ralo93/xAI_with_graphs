@@ -60,7 +60,7 @@ class GAT(torch.nn.Module):
         x_skip = x
 
         # GAT layer 1
-        x = self.gat1(x, edge_index)
+        x, alpha1 = self.gat1(x, edge_index, return_attention_weights=True)
         x = F.elu(x)
         x = self.norm1(x)
         x = self.dropout(x)
@@ -68,15 +68,16 @@ class GAT(torch.nn.Module):
         # GAT layer 2
         x_skip = self.proj_skip(x_skip)  # Align dimensions for skip connection
         x = x + x_skip  # Add skip connection
-        x = self.gat2(x, edge_index)
+        x, alpha2 = self.gat2(x, edge_index, return_attention_weights=True)
         x = F.elu(x)
         x = self.norm2(x)
         x = self.dropout(x)
 
         # GAT layer 3
-        x = self.gat3(x, edge_index)
+        x, alpha3 = self.gat3(x, edge_index, return_attention_weights=True)
 
-        return x
+        return x, [alpha1, alpha2, alpha3]
+    
 
 def get_raw_model(in_channels: int, hidden_channels: int, out_channels: int, 
                   num_heads: int = 4, dropout: float = 0.3, edge_dim: int = None) -> GAT:

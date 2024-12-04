@@ -3,10 +3,23 @@ import torch
 from torch_geometric.utils import k_hop_subgraph
 
 # URL of your local FastAPI endpoint
-#URL = "http://localhost:8080/predict/"
+URL = "http://localhost:8000/predict/"
 
-CLOUD_URL = "https://cora-gat-image-196616273613.europe-west10.run.app/predict/"
+#CLOUD_URL = "https://cora-gat-image-196616273613.europe-west10.run.app/predict/"
 
+from torch_geometric.utils import add_self_loops
+
+def make_bidirectional(edge_index):
+    print(f"edge_index shape before bidirect: {edge_index.shape}")
+    edge_index = edge_index.t()
+    print(f"Transposed edge_index shape: {edge_index.shape}")
+    edge_index_reversed = edge_index.flip(0)
+    print(f"Reversed edge_index shape: {edge_index_reversed.shape}")
+    edge_index_bidirectional = torch.cat([edge_index, edge_index_reversed], dim=0)  # this should be 1 originally
+    print(f"Concatenated bidirectional edge_index shape: {edge_index_bidirectional.shape}")
+    edge_index_bidirectional = torch.unique(edge_index_bidirectional, dim=1)
+    print(f"Unique bidirectional edge_index shape: {edge_index_bidirectional.shape}")
+    return edge_index_bidirectional.t() #for not being cora
 
 def create_large_graph(num_nodes=50, num_features=1433):
     """
@@ -36,20 +49,6 @@ def create_large_graph(num_nodes=50, num_features=1433):
 
     return node_features, edges
 
-
-from torch_geometric.utils import add_self_loops
-
-def make_bidirectional(edge_index):
-    print(f"edge_index shape before bidirect: {edge_index.shape}")
-    edge_index = edge_index.t()
-    print(f"Transposed edge_index shape: {edge_index.shape}")
-    edge_index_reversed = edge_index.flip(0)
-    print(f"Reversed edge_index shape: {edge_index_reversed.shape}")
-    edge_index_bidirectional = torch.cat([edge_index, edge_index_reversed], dim=0)  # this should be 1 originally
-    print(f"Concatenated bidirectional edge_index shape: {edge_index_bidirectional.shape}")
-    edge_index_bidirectional = torch.unique(edge_index_bidirectional, dim=1)
-    print(f"Unique bidirectional edge_index shape: {edge_index_bidirectional.shape}")
-    return edge_index_bidirectional.t() #for not being cora
 
 def extract_subgraph(node_idx, num_hops, node_features, edges):
     """
@@ -126,6 +125,7 @@ def test_predict_endpoint(target_node, num_hops=3):
         node_idx=target_node, num_hops=num_hops, node_features=node_features, edges=edges
     )
 
+    # The subgraph extraction function now also has the target node we want to run prediction for
     target_node_idx = input_data_dict['target_node_idx']
 
     # get it out again because the request does not expect it
@@ -134,16 +134,19 @@ def test_predict_endpoint(target_node, num_hops=3):
     try:
         # Send POST request to the prediction endpoint
         print("Sending Subgraph to Prediction Endpoint...")
-        response = requests.post(CLOUD_URL, json=input_data_dict)
+        response = requests.post(URL, json=input_data_dict)
 
         # Check response status
         response.raise_for_status()
 
         # Parse the response
         result = response.json()
+        print(result)
 
         print("Prediction Response:")
-        #print(f"Class Probabilities: {result['class_probabilities']}")
+        print(f"Class Probabilities: {result['class_probabilities']}")
+        print("Attention Weights:")
+        print(f"Attention Weights: {result['attention_weights']}")
 
         return result, target_node_idx
 

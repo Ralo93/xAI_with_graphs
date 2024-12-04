@@ -1,10 +1,8 @@
 from src.helpers.datasets import *
-from tensorboard.plugins.projector import ProjectorConfig, visualize_embeddings
-import tensorflow as tf
 import numpy as np
 import torch
 import os
-
+from app.model import *
 
 def main():
     # Load the Cora dataset
@@ -12,9 +10,26 @@ def main():
     print(cora_dataset)
 
     # Extract data
-    nodes = cora_dataset.node_features.numpy()  # Convert PyTorch tensor to NumPy
+    nodes_features = cora_dataset.node_features.numpy()  # Convert PyTorch tensor to NumPy
     labels = cora_dataset.labels.numpy()        # Convert PyTorch tensor to NumPy
     edges = cora_dataset.edges
+   
+
+    #TODO
+    # Visualize the nodes/node features it in 2D
+
+    # Load the trained model
+    model = load_model()
+
+    # Do 1 forward pass with the model 
+    outputs = model(nodes_features, edges)
+
+    # Visualize the enriched node features in 2D
+
+    
+
+
+    exit()
 
     # Ensure the logs directory exists
     os.makedirs("logs", exist_ok=True)

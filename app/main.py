@@ -1,13 +1,12 @@
 from fastapi import FastAPI, HTTPException
-import mlflow
 from pydantic import BaseModel
 import torch
 import numpy as np
-import torch_geometric
-from typing import List, Union
+from typing import List
 from app.model import *
+from typing import List, Any
+from pydantic import BaseModel
 
-import os
 
 def load_model_in_main():
     try:
@@ -39,13 +38,13 @@ class GraphInputData(BaseModel):
     edge_index: List[List[int]]       # Edge connections
 
 
+
 class PredictionResponse(BaseModel):
     """
     Structured prediction response
     """
     class_probabilities: List[List[float]]  # Probabilities for each node
-
-
+    attention_weights: List[Any]  # Attention weights from each layer
 
 @app.post("/predict/", response_model=PredictionResponse)
 async def predict(input_data: GraphInputData):
@@ -59,24 +58,29 @@ async def predict(input_data: GraphInputData):
         
         # Disable gradient computation for inference
         with torch.no_grad():
-            # Get model prediction
-            output = model(x, edge_index)
- 
+            # Get model prediction and attention weights
+            output, attention_weights = model(x, edge_index)
+
+            # Compute class probabilities
             probabilities = torch.softmax(output, dim=1)
-            # Validate and clean the probabilities
             probabilities = probabilities.cpu().numpy()
+
+            # Handle NaN or infinite values
             probabilities = np.nan_to_num(probabilities, nan=0.0, posinf=1.0, neginf=0.0)
 
-            #print(probabilities)
             # Convert to a list of lists with Python floats
             probabilities = [[float(p) for p in prob] for prob in probabilities]
             
+            # Convert attention weights to a serializable format (e.g., lists)
+            attention_weights = [aw[0].cpu().numpy().tolist() for aw in attention_weights]
+
             return {
-                "class_probabilities": probabilities
+                "class_probabilities": probabilities,
+                "attention_weights": attention_weights,
             }
         
     except Exception as e:
-        # Print full traceback
+        # Print full traceback for debugging
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))

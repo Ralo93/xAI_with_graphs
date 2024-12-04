@@ -2,15 +2,20 @@ python -m mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifa
 
 file:C:/Users/rapha/repositories/final_project/heterophilous-graphs/mlruns/10/ec80f1fe720946fe9f11126ec5831338/artifacts/model
 
+uvicorn app.main:app --reload
 
 gcloud auth configure-docker europe-west10-docker.pkg.dev
 
-docker tag gcr.io/ml-ops-project-434010/cora_gat_image:v2 europe-west10-docker.pkg.dev/ml-ops-project-434010/cora-gat-repo/gcr.io/ml-ops-project-434010/cora_gat_image:v2
+docker tag gcr.io/ml-ops-project-434010/cora_gat_image:v2 europe-west10-docker.pkg.dev/ml-ops-project-434010/cora-gat-repo/cora_gat_image:v2
 
-docker push europe-west10-docker.pkg.dev/ml-ops-project-434010/cora-gat-repo/gcr.io/ml-ops-project-434010/cora_gat_image:v2
+docker push europe-west10-docker.pkg.dev/ml-ops-project-434010/cora-gat-repo/cora_gat_image:v2
 
-gcloud run deploy cora-gat-service \
-    --image=europe-west10-docker.pkg.dev/ml-ops-project-434010/cora-gat-repo/gcr.io/ml-ops-project-434010/cora_gat_image	 \
-    --platform=managed \
-    --region=europe-west10 \ 
+
+https://cora-gat-image-196616273613.europe-west10.run.app
+
+
+gcloud run deploy cora-gat-service ^
+    --image=europe-west10-docker.pkg.dev/ml-ops-project-434010/cora-gat-repo/cora_gat_image:v2 ^
+    --platform=managed ^
+    --region=europe-west10 ^
     --allow-unauthenticated
