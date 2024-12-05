@@ -28,7 +28,7 @@ def test_predict_endpoint(target_node, num_hops=3):
         node_idx=target_node, num_hops=num_hops, node_features=node_features, edges=edges, labels=labels
     )
 
-    net = visualize_subgraph_pyvis(input_data_dict, save=False)
+    net = visualize_subgraph_pyvis(input_data_dict, save=True)
 
     # The subgraph extraction function now also has the target node we want to run prediction for
     target_node_idx = input_data_dict['target_node_idx']
@@ -52,12 +52,15 @@ def test_predict_endpoint(target_node, num_hops=3):
     #aw = result.get('attention_weights', [])
     #print(f"Result: {result}")
     print(f"Class Probabilities for Target Node: {result['class_probabilities'][target_node_idx]}")
+
+    probs_predicted = result['class_probabilities'][target_node_idx]
     
     normalized_analysis = analyze_attention_weights(result)
 
-    visualize_analysis_with_layers(input_data_dict, normalized_analysis, target_node_idx)
+    visualize_analysis_with_layers(input_data_dict, normalized_analysis, target_node_idx, np.argmax(probs_predicted), target_label)
 
     return result, target_node_idx
+
 
     #except requests.exceptions.RequestException as e:
     #    print(f"Error connecting to the endpoint: {e}")
@@ -69,7 +72,7 @@ def test_predict_endpoint(target_node, num_hops=3):
 # Run the test
 if __name__ == "__main__":
 
-    target_node = 15  # Specify the node to predict
+    target_node = 1000  # Take 1000 as a good example
     result, target_node_idx = test_predict_endpoint(target_node)
     target_class_probabilities = result['class_probabilities'][target_node_idx]
     predicted_class = target_class_probabilities.index(max(target_class_probabilities))

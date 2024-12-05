@@ -15,7 +15,7 @@ flavors:
     model_data: data
     pytorch_version: 2.5.1+cpu
 mlflow_version: 2.18.0
-model_size_bytes: 312272
-model_uuid: c45f4ef080c649bc9f614f85ff8481fd
-run_id: e005f13edeef46a3b8675fd5216c25b2
-utc_time_created: '2024-12-04 08:57:01.573619'
+model_size_bytes: 602128
+model_uuid: bd4dee258bf84e37bd28eca19c9df0cf
+run_id: 897f98ce89754ccf83b0e6f5beb9cadd
+utc_time_created: '2024-12-05 16:25:50.575808'

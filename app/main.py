@@ -82,7 +82,6 @@ async def predict(input_data: GraphInputData):
             for i, aw in enumerate(attention_weights):
                 print(f"Layer {i+1}: {len(aw)} edges, {len(aw[0]) if len(aw) > 0 else 0} heads")
 
-
             return {
                 "edge_index": edge_index.tolist(),
                 "model_output": output.tolist(),

@@ -131,17 +131,12 @@ def analyze_attention_weights(result):
     return analysis_results
 
 
+from torch_geometric.utils import to_undirected
+
 def make_bidirectional(edge_index):
-    print(f"edge_index shape before bidirect: {edge_index.shape}")
-    edge_index = edge_index.t()
-    print(f"Transposed edge_index shape: {edge_index.shape}")
-    edge_index_reversed = edge_index.flip(0)
-    print(f"Reversed edge_index shape: {edge_index_reversed.shape}")
-    edge_index_bidirectional = torch.cat([edge_index, edge_index_reversed], dim=0)  # this should be 1 originally
-    print(f"Concatenated bidirectional edge_index shape: {edge_index_bidirectional.shape}")
-    edge_index_bidirectional = torch.unique(edge_index_bidirectional, dim=1)
-    print(f"Unique bidirectional edge_index shape: {edge_index_bidirectional.shape}")
-    return edge_index_bidirectional.t() #for not being cora
+    edge_index = to_undirected(edge_index)
+    return edge_index
+
 
 
 
