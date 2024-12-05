@@ -138,9 +138,8 @@ def load_model(
     
     # Load the model weights
     try:
-        pass
-        #model = torch.load(model_path, map_location='cpu')
-        #model.eval()
+        model = torch.load(model_path, map_location='cpu')
+        model.eval()
     except Exception as e:
         print(f"Error loading model weights: {e}")
         raise
@@ -149,15 +148,3 @@ def load_model(
     model.eval()
     
     return model
-
-# Example usage
-if __name__ == "__main__":
-    # Example parameters - adjust these to match your model
-    model = load_model(
-        in_channels=3,      # Adjust to your node feature dimension
-        num_heads=5, 
-        hidden_channels=64, # Adjust to your model's hidden layer size
-        out_channels=6,     # Number of output classes
-        model_path=None     # Uses default path
-    )
-    print(model)

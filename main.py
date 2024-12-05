@@ -6,7 +6,7 @@ from app.model import *
 def main():
     # Load the Cora dataset
     cora_dataset = CoraDataset('data/cora.npz')
-    print(cora_dataset)
+    #print(cora_dataset)
 
     # Extract data
     nodes_features = cora_dataset.node_features.numpy()  # Convert PyTorch tensor to NumPy

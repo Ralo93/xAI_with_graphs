@@ -12,8 +12,8 @@ def load_model_in_main():
     try:
         model = load_model(
         in_channels=1433,      # Adjust to your node feature dimension
-        hidden_channels=64, # Adjust to your model's hidden layer size
-        out_channels=6,     # Number of output classes
+        hidden_channels=5, # Adjust to your model's hidden layer size
+        out_channels=7,     # Number of output classes
         model_path=None     # Uses default path
         )
 

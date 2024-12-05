@@ -36,7 +36,7 @@ class CoraDataset:
         data = np.load(npz_file, allow_pickle=True)
         
         # Print available keys for debugging
-        print("Available keys in .npz file:", list(data.keys()))
+        #print("Available keys in .npz file:", list(data.keys()))
         
         # Load node features
         node_features = data['features']
@@ -47,11 +47,11 @@ class CoraDataset:
         # Handle adjacency matrix
         adjacency = data['adjacency']
 
-        print("Adjacency type:", type(adjacency))
-        print("Adjacency dtype:", adjacency.dtype)
+        #print("Adjacency type:", type(adjacency))
+        #print("Adjacency dtype:", adjacency.dtype)
         if hasattr(adjacency, 'shape'):
-            print("Adjacency shape:", adjacency.shape)
-        
+            #print("Adjacency shape:", adjacency.shape)
+            pass
         # Special handling for scipy sparse matrix
         if isinstance(adjacency, np.ndarray) and adjacency.dtype == object:
             # This suggests the adjacency matrix is a scipy sparse matrix stored as an object

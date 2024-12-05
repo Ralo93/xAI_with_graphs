@@ -237,11 +237,18 @@ def extract_subgraph(node_idx, num_hops, node_features, edges, labels):
 
     # check if this fixes it, it actually does. There is some magic in transpositions, as they appear everywhere in the code... not good
     subgraph_edge_index = subgraph_edge_index.t()
-    print(subgraph_edge_index)
+    #print(subgraph_edge_index)
+    print(f"Subgraph target label (mapped): {labels[subset_nodes][target_node_subgraph_idx]}")
+
+    print(f"Original target node label: {labels[node_idx]}")
+    print(f"Subgraph target node label: {labels[subset_nodes][target_node_subgraph_idx]}")
+
 
     return {
         "node_features": subgraph_node_features.tolist(),
         "edge_index": subgraph_edge_index.tolist(),
-        "target_node_idx": target_node_subgraph_idx
+        "target_node_idx": target_node_subgraph_idx,
+        "labels": labels[subset_nodes].tolist(),  # Add subset labels for inspection
     }
+
 
