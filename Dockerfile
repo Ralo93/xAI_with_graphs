@@ -1,21 +1,25 @@
-# Use a lightweight Python base image
-FROM python:3.12
+FROM python:3.12-slim as base
 
-# Set the working directory
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH="/code/src:$PYTHONPATH"
+
+# Set working directory
 WORKDIR /code
 
-# Copy the requirements file from our folder into /code folder in the container
-COPY ./requirements.txt /code/requirements.txt
+# Copy requirements
+COPY requirements/base.txt requirements/base.txt
+COPY requirements/prod.txt requirements/prod.txt
 
-# Copy the app code
-COPY ./app /code/app
+# Install production dependencies
+RUN pip install --no-cache-dir -r requirements/prod.txt
 
-# Install the requirements.txt file inside the container
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+# Copy source code
+COPY src /code/src
 
-
-# Expose the port for the FastAPI app
+# Expose port
 EXPOSE 8080
 
-# Define the command to run the app
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Run the application
+CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8080"]

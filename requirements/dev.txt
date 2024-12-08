@@ -1,0 +1,29 @@
+# Development-specific requirements
+-r base.txt
+# Testing
+pytest==8.3.4
+pytest-asyncio==0.24.0
+pytest-cov==4.1.0
+httpx==0.28.0  # For FastAPI testing
+
+# Code quality
+black==24.2.0
+isort==5.13.2
+flake8==7.0.0
+mypy==1.9.0
+
+# Development tools
+jupyter==1.0.0
+ipython==8.22.2
+notebook==7.1.2
+
+# Debugging
+debugpy==1.8.1
+
+# Documentation
+sphinx==7.2.6
+sphinx-rtd-theme==2.0.0
+myst-parser==2.0.0
+
+# Pre-commit hooks
+pre-commit==3.6.0
