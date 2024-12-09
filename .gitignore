@@ -4,13 +4,15 @@ __pycache__/
 *$py.class
 
 # Project specific
-data/
+/data/
 .envs/
 logs/
 mlflow.db
 src/visualization/output/
 *.html
 !src/visualization/templates/*.html
+
+
 
 # MLflow
 mlruns/
