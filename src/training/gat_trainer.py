@@ -1,4 +1,3 @@
-# src/training/trainer.py
 import torch
 import mlflow
 import logging

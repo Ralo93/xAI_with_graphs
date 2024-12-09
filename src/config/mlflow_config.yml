@@ -1,20 +1,27 @@
-experiment_name: gat cora
+experiment_name: graph-neural-networks
+model_type: gat  # or 'cognn'
 dataset: cora
 out_dimenstions: 7
+
 hyperopt:
   direction: maximize
   n_trials: 10
-  study_name: gat_hyperopt
+  study_name: gnn_hyperopt
+
 mlflow:
   registry_uri: file:./mlruns
   tracking_uri: file:./mlruns
+
+# GAT model configuration
 model:
   dropout: 0.3
   hidden_channels: 8
   num_heads: 4
+
 optimizer:
   lr: 0.01
   name: adam
+
 training:
   device: cpu
   early_stopping_patience: 10

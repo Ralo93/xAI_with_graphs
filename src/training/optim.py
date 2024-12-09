@@ -1,7 +1,7 @@
 from typing import Dict, Any
 import optuna
 import mlflow
-from .trainer import GATTrainer, TrainingConfig
+from .gat_trainer import GATTrainer, TrainingConfig
 from ..models.gat import GAT, GATConfig
 
 

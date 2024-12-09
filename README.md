@@ -1,6 +1,6 @@
 # xAI_with_graphs
 
-This project implements explainable Graph Attention Networks for node classification using PyTorch Geometric, with a FastAPI backend for inference.
+This project implements explainable Graph Neural Networks for node classification, including GAT (Graph Attention Networks) and CoGNN models, with a FastAPI backend for inference.
 
 ## Installation Guide
 
@@ -37,6 +37,54 @@ python -m src.data.download
 ls data/cora.npz
 ```
 
+## Model Training and Selection
+
+The project supports training different graph neural network models. You can select and train models through the MLflow configuration:
+
+### 1. Configuration Setup
+Edit `src/config/mlflow_config.yml`:
+```yaml
+experiment_name: graph-neural-networks
+model_type: gat  # Choose 'gat' or 'cognn'
+```
+
+### 2. Available Models
+
+#### GAT (Graph Attention Network)
+```yaml
+model_type: gat
+```
+- Implementation: `src/models/gat.py`
+- Features: 
+  - Multi-head attention
+  - Layer normalization
+  - Skip connections
+
+#### CoGNN (Conditional Graph Neural Network)
+```yaml
+model_type: cognn
+```
+- Implementation: `src/models/cognn.py`
+- Features:
+  - Gumbel-softmax attention
+  - Edge weight learning
+  - Conditional computation
+
+### 3. Training Models
+```bash
+# Train selected model (specified in config)
+python -m src.mlflow_main
+```
+
+### 4. Tracking Experiments
+View training progress and results:
+```bash
+# Start MLflow UI
+mlflow ui --port 5000
+```
+Access at http://localhost:5000
+
+
 ## Running the Application
 
 1. **Start the API Server**
@@ -59,18 +107,19 @@ docker compose up
 ```
 .
 ├── src/
-│   ├── api/          # FastAPI application
-│   ├── data/         # Dataset handling and download scripts
-│   ├── models/       # Model definitions
-│   ├── training/     # Training scripts
-│   ├── utils/        # Utility functions
-│   └── visualization/# Visualization tools
-├── tests/            # Test files
-├── requirements/     # Dependency files
-│   ├── base.txt     # Core dependencies
-│   ├── dev.txt      # Development dependencies
-│   └── prod.txt     # Production dependencies
-└── data/            # Dataset storage
+│   ├── api/              # FastAPI application
+│   ├── data/             # Dataset handling
+│   ├── models/           # Model implementations (GAT, CoGNN)
+│   ├── training/         # Training scripts
+│   ├── utils/           # Utility functions
+│   └── visualization/   # Visualization tools
+├── tests/               # Test files
+├── requirements/        # Dependency files
+├── models/             # Saved model artifacts
+└── data/               # Dataset storage
+    ├── raw/            # Raw downloaded data
+    ├── processed/      # Processed datasets
+    └── interim/        # Intermediate data
 ```
 
 ## Troubleshooting
