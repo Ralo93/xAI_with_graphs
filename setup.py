@@ -1,34 +1,32 @@
+# setup.py
 from setuptools import setup, find_packages
 from pathlib import Path
 
 
 def read_requirements(filename: str) -> list:
     """Read requirements from file"""
-    return [
-        line.strip()
-        for line in Path(filename).read_text().splitlines()
-        if line.strip() and not line.startswith("#")
-    ]
+    try:
+        return [
+            line.strip()
+            for line in Path(filename).read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.startswith(("#", "-r"))
+        ]
+    except Exception as e:
+        print(f"Warning: Could not read requirements file {filename}: {e}")
+        return []
 
-
-# Read requirements
-base_reqs = read_requirements("requirements/base.txt")
-prod_reqs = read_requirements("requirements/prod.txt")
-dev_reqs = read_requirements("requirements/dev.txt")
 
 setup(
-    name="graph-attention-networks",
+    name="gat-explainer",
     version="0.1.0",
-    description="Graph Attention Networks for Node Classification",
-    author="Your Name",
-    author_email="your.email@example.com",
+    description="Explainable Graph Attention Networks",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
-    python_requires=">=3.8",
-    install_requires=base_reqs,
+    python_requires=">=3.10",
+    install_requires=read_requirements("requirements/base.txt"),
     extras_require={
-        "dev": dev_reqs,
-        "prod": prod_reqs,
+        "dev": read_requirements("requirements/dev.txt"),
+        "prod": read_requirements("requirements/prod.txt"),
     },
     entry_points={
         "console_scripts": [
@@ -36,13 +34,4 @@ setup(
             "gat-serve=src.api.main:main",
         ],
     },
-    classifiers=[
-        "Development Status :: 3 - Alpha",
-        "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-    ],
 )

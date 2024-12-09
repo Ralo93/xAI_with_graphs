@@ -1,4 +1,3 @@
-# src/visualization/layer_vis.py
 from typing import Dict, Any, List, Optional, Set
 from .base import BaseGraphVisualizer
 

@@ -2,7 +2,7 @@ from pathlib import Path
 from functools import lru_cache
 from typing import Optional
 import torch
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -47,10 +47,10 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = True
+    # Model configuration using SettingsConfigDict
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", case_sensitive=True
+    )
 
     @property
     def device(self) -> torch.device:
@@ -60,7 +60,7 @@ class Settings(BaseSettings):
         return torch.device("cpu")
 
     @property
-    def model_config(self) -> dict:
+    def model_config_dict(self) -> dict:
         """Get model configuration"""
         return {
             "in_channels": self.MODEL_IN_CHANNELS,
