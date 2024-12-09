@@ -1,3 +1,4 @@
+import sys
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -12,19 +13,22 @@ from torch.nn import CrossEntropyLoss
 from torch.optim import Adam
 from sklearn.model_selection import train_test_split
 import torch.nn.functional as F
+import tqdm
 
-
-def load_cora(train_ratio=0.05, val_ratio=0.95):
+def load_cora(train_ratio=0.6, val_ratio=0.2, test_ratio=0.2):
     """
     Load and preprocess the Cora dataset for node classification.
 
     Args:
         train_ratio (float): Ratio of nodes for training.
         val_ratio (float): Ratio of nodes for validation.
+        test_ratio (float): Ratio of nodes for testing.
     
     Returns:
         data: Preprocessed graph data object.
     """
+    assert train_ratio + val_ratio + test_ratio == 1.0, "Ratios must sum up to 1."
+
     # Load Cora dataset
     dataset = Planetoid(root='data/Cora', name='Cora', transform=NormalizeFeatures())
     data = dataset[0]
@@ -35,10 +39,13 @@ def load_cora(train_ratio=0.05, val_ratio=0.95):
 
     train_size = int(train_ratio * num_nodes)
     val_size = int(val_ratio * num_nodes)
+    test_size = num_nodes - train_size - val_size  # Ensure all nodes are accounted for
 
     # Shuffle and split indices
-    train_indices, test_indices = train_test_split(indices, train_size=train_size, shuffle=True, random_state=42)
-    val_indices, test_indices = train_test_split(test_indices, train_size=val_size, shuffle=True, random_state=42)
+    shuffled_indices = indices[torch.randperm(num_nodes)]
+    train_indices = shuffled_indices[:train_size]
+    val_indices = shuffled_indices[train_size:train_size + val_size]
+    test_indices = shuffled_indices[train_size + val_size:]
 
     # Create boolean masks
     data.train_mask = torch.zeros(num_nodes, dtype=torch.bool)
@@ -52,15 +59,16 @@ def load_cora(train_ratio=0.05, val_ratio=0.95):
     return data
 
 
+
 class Config:
     """Centralized configuration for the CoGNN model"""
     class Action:
         # Action Network Configuration
-        ACTIVATION = F.relu
+        ACTIVATION = F.gelu # could be also F.relu but gelu has way better performance
         DROPOUT = 0.2
-        HIDDEN_DIM = 64
-        NUM_LAYERS = 2
-        INPUT_DIM = 128
+        HIDDEN_DIM = 16
+        NUM_LAYERS = 1
+        INPUT_DIM = 64 # needs to be the same as hidden dimension in environment network
         OUTPUT_DIM = 2
         AGG = 'mean'
 
@@ -70,7 +78,7 @@ class Config:
         OUTPUT_DIM = 7
         NUM_LAYERS = 3
         DROPOUT = 0.2
-        HIDDEN_DIM = 128
+        HIDDEN_DIM = 64
         LAYER_NORM = False
         SKIP_CONNECTION = True
         AGG = 'sum'
@@ -79,13 +87,13 @@ class Config:
         # Gumbel Softmax Configuration
         TEMPERATURE = 0.5
         TAU = 0.01
-        LEARN_TEMPERATURE = False
+        LEARN_TEMPERATURE = True
 
     class Training:
         # Training Hyperparameters
         LEARNING_RATE = 0.001
         WEIGHT_DECAY = 0
-        EPOCHS = 200
+        EPOCHS = 300
         BATCH_SIZE = 32
         DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -145,13 +153,44 @@ class ActionNet(nn.Module):
         
         return x
     
+class GraphLinear(Linear):
+    def forward(self, x: Tensor, edge_index: Optional[Tensor] = None) -> Tensor:
+        # Ignore edge_index as Linear works on node features only
+        return super().forward(x)
+
+
+
+class TempSoftPlus(nn.Module):
+    def __init__(self, gumbel_config=Config.Gumbel, env_dim: int = Config.Environment.HIDDEN_DIM):
+        super(TempSoftPlus, self).__init__()
+        self.linear_model = GraphLinear(env_dim, 1, bias=False)  # Simple linear model for demonstration
+        self.tau0 = gumbel_config.TAU
+        self.learn_temp = gumbel_config.LEARN_TEMPERATURE
+        self.softplus = nn.Softplus(beta=1)
+
+    def forward(self, x: Tensor, edge_index: Optional[Tensor] = None) -> Tensor:
+        # Pass only x to linear_model, as edge_index is unused here
+        x = self.linear_model(x)
+        x = self.softplus(x) + self.tau0
+        temp = x.pow(-1)
+        return temp.masked_fill(temp == float('inf'), 0.0)
+
+
     
 class CoGNN(nn.Module):
     def __init__(self, 
                  gumbel_args=Config.Gumbel, 
                  env_args=Config.Environment, 
-                 action_args=Config.Action):
+                 action_args=Config.Action,
+                 ):
         super().__init__()
+
+        # Gumbel softmax configuration
+        self.learn_temp = gumbel_args.LEARN_TEMPERATURE
+        self.temp = gumbel_args.TEMPERATURE
+
+        if self.learn_temp:
+            self.temp_model = TempSoftPlus()
         
         # Environment network configuration
         self.env_net = nn.ModuleList([
@@ -172,9 +211,7 @@ class CoGNN(nn.Module):
         # Dropout
         self.dropout = nn.Dropout(p=env_args.DROPOUT)
         
-        # Gumbel softmax configuration
-        self.learn_temp = gumbel_args.LEARN_TEMPERATURE
-        self.temp = gumbel_args.TEMPERATURE
+
 
         # Action networks
         self.in_act_net = ActionNet(action_args)
@@ -200,9 +237,12 @@ class CoGNN(nn.Module):
             in_logits = self.in_act_net(x, edge_index)
             out_logits = self.out_act_net(x, edge_index)
 
+            temp = self.temp_model(x=x, edge_index=edge_index) if self.learn_temp else self.temp
+            #print(temp)
+
             # Gumbel Softmax
-            in_probs = F.gumbel_softmax(logits=in_logits, tau=self.temp, hard=True)
-            out_probs = F.gumbel_softmax(logits=out_logits, tau=self.temp, hard=True)
+            in_probs = F.gumbel_softmax(logits=in_logits, tau=temp, hard=True)
+            out_probs = F.gumbel_softmax(logits=out_logits, tau=temp, hard=True)
 
             # Create edge weights
             edge_weight = self.create_edge_weight(edge_index, in_probs[:, 0], out_probs[:, 0])
@@ -248,34 +288,46 @@ def train_cognn(data, config=Config.Training):
     )
     criterion = CrossEntropyLoss()
 
-    for epoch in range(config.EPOCHS):
-        model.train()
-        optimizer.zero_grad()
+    with tqdm.tqdm(total=config.EPOCHS, file=sys.stdout, desc="Training Progress") as pbar:
 
-        # Forward pass
+        for epoch in range(config.EPOCHS):
+            model.train()
+            optimizer.zero_grad()
+
+            # Forward pass
+            out, _ = model(data.x, data.edge_index)
+            train_loss = criterion(out[data.train_mask], data.y[data.train_mask])
+            train_loss.backward()
+            optimizer.step()
+
+            # Validation
+            model.eval()
+            with torch.no_grad():
+                val_loss = criterion(out[data.val_mask], data.y[data.val_mask])
+                val_pred = out[data.val_mask].argmax(dim=1)
+                val_accuracy = (val_pred == data.y[data.val_mask]).sum().item() / data.val_mask.sum().item()
+
+            # Update progress bar
+            pbar.set_postfix({
+                "Train Loss": f"{train_loss.item():.4f}",
+                "Val Loss": f"{val_loss.item():.4f}",
+                "Val Accuracy": f"{val_accuracy:.4f}"
+            })
+            pbar.update(1)
+
+        # Evaluate on the test set
+    model.eval()
+    with torch.no_grad():
         out, _ = model(data.x, data.edge_index)
-        train_loss = criterion(out[data.train_mask], data.y[data.train_mask])
-        train_loss.backward()
-        optimizer.step()
-
-        # Validation
-        model.eval()
-        with torch.no_grad():
-            val_loss = criterion(out[data.val_mask], data.y[data.val_mask])
-            val_pred = out[data.val_mask].argmax(dim=1)
-            val_accuracy = (val_pred == data.y[data.val_mask]).sum().item() / data.val_mask.sum().item()
-
-        print(f'Epoch {epoch + 1}/{config.EPOCHS}:')
-        print(f'Train Loss: {train_loss.item():.4f}')
-        print(f'Val Loss: {val_loss.item():.4f}, Val Accuracy: {val_accuracy:.4f}')
+        test_pred = out[data.test_mask].argmax(dim=1)
+        test_accuracy = (test_pred == data.y[data.test_mask]).sum().item() / data.test_mask.sum().item()
+    print(f"Test Accuracy: {test_accuracy:.4f}")
 
     return model
 
-
-# Example usage
 if __name__ == "__main__":
-    # Create toy dataset
-    cora_data = load_cora()
-    
+    # Specify ratios for train, validation, and test sets
+    cora_data = load_cora(train_ratio=0.6, val_ratio=0.2, test_ratio=0.2)
+
     # Train the model
     trained_model = train_cognn(cora_data)
