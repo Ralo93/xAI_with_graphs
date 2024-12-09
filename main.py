@@ -24,8 +24,6 @@ def main():
 
     # Visualize the enriched node features in 2D
 
-
-
     exit()
 
     # Ensure the logs directory exists

@@ -5,7 +5,7 @@ FROM python:3.12
 WORKDIR /code
 
 # Copy the requirements file from our folder into /code folder in the container
-COPY ./requirements.txt /code/requirements.txt
+COPY ./requirements_for_app.txt /code/requirements.txt
 
 # Copy the app code
 COPY ./app /code/app

@@ -4,6 +4,7 @@ import torch
 import scipy.sparse as sp
 
 
+
 # use this for roman-empire, questions or any other dataset but not cora
 class Dataset:
     def __init__(self, name, add_self_loops=False, device='cpu', use_sgc_features=False, use_identity_features=False,
@@ -21,6 +22,7 @@ class Dataset:
         
         return
     
+
 
 class CoraDataset:
     def __init__(self, npz_file, add_self_loops=False, device='cpu'):
