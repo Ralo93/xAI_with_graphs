@@ -11,9 +11,10 @@ from torch_geometric.datasets import Planetoid
 from torch_geometric.transforms import NormalizeFeatures
 from torch.nn import CrossEntropyLoss
 from torch.optim import Adam
-from sklearn.model_selection import train_test_split
 import torch.nn.functional as F
 import tqdm
+import networkx as nx
+from pyvis.network import Network
 
 def load_cora(train_ratio=0.6, val_ratio=0.2, test_ratio=0.2):
     """
@@ -64,21 +65,21 @@ class Config:
     """Centralized configuration for the CoGNN model"""
     class Action:
         # Action Network Configuration
-        ACTIVATION = F.gelu # could be also F.relu but gelu has way better performance
-        DROPOUT = 0.2
-        HIDDEN_DIM = 16
+        ACTIVATION = F.relu # could be also F.relu but gelu has way better performance
+        DROPOUT = 0.5
+        HIDDEN_DIM = 32 # independent
         NUM_LAYERS = 1
-        INPUT_DIM = 64 # needs to be the same as hidden dimension in environment network
+        INPUT_DIM = 32 # needs to be the same as hidden dimension in environment network
         OUTPUT_DIM = 2
-        AGG = 'mean'
+        AGG = 'sum'
 
     class Environment:
         # Environment Network Configuration
         INPUT_DIM = 1433
         OUTPUT_DIM = 7
-        NUM_LAYERS = 3
-        DROPOUT = 0.2
-        HIDDEN_DIM = 64
+        NUM_LAYERS = 3 #3
+        DROPOUT = 0.5
+        HIDDEN_DIM = 32
         LAYER_NORM = False
         SKIP_CONNECTION = True
         AGG = 'sum'
@@ -93,7 +94,7 @@ class Config:
         # Training Hyperparameters
         LEARNING_RATE = 0.001
         WEIGHT_DECAY = 0
-        EPOCHS = 300
+        EPOCHS = 500
         BATCH_SIZE = 32
         DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -159,7 +160,6 @@ class GraphLinear(Linear):
         return super().forward(x)
 
 
-
 class TempSoftPlus(nn.Module):
     def __init__(self, gumbel_config=Config.Gumbel, env_dim: int = Config.Environment.HIDDEN_DIM):
         super(TempSoftPlus, self).__init__()
@@ -199,7 +199,7 @@ class CoGNN(nn.Module):
         ] + [
             # Intermediate layers: WeightedGNNConv
             WeightedGNNConv(env_args.HIDDEN_DIM, env_args.HIDDEN_DIM) 
-            for _ in range(env_args.NUM_LAYERS - 1)
+            for _ in range(env_args.NUM_LAYERS)
         ] + [
             # Final layer: Linear decoder
             nn.Linear(env_args.HIDDEN_DIM, env_args.OUTPUT_DIM)
@@ -212,13 +212,12 @@ class CoGNN(nn.Module):
         self.dropout = nn.Dropout(p=env_args.DROPOUT)
         
 
-
         # Action networks
         self.in_act_net = ActionNet(action_args)
         self.out_act_net = ActionNet(action_args)
 
-        # Pooling function
-        #self.pooling = pool()
+        self.edge_weights_by_layer = []  # To store edge weights for each layer
+
 
     def forward(self, x: torch.Tensor, edge_index: torch.Tensor, pestat=None, 
                 edge_attr: Optional[torch.Tensor] = None, 
@@ -227,6 +226,8 @@ class CoGNN(nn.Module):
         # Initial node encoding
         x = self.env_net[0](x, pestat)
         x = self.dropout(x)
+
+        self.edge_weights_by_layer = []  # Reset weights for this forward pass
 
         # Process through GNN layers
         for layer_idx in range(1, len(self.env_net) - 1):
@@ -244,8 +245,17 @@ class CoGNN(nn.Module):
             in_probs = F.gumbel_softmax(logits=in_logits, tau=temp, hard=True)
             out_probs = F.gumbel_softmax(logits=out_logits, tau=temp, hard=True)
 
+            print(f"in_probs: {in_probs}")
+            print(f"out_probs: {out_probs}")
+
             # Create edge weights
             edge_weight = self.create_edge_weight(edge_index, in_probs[:, 0], out_probs[:, 0])
+            self.edge_weights_by_layer.append(edge_weight) 
+
+            print(f"Edge weights in layer {layer_idx}: {self.edge_weights_by_layer[-1]}")
+
+            assert torch.all(torch.logical_or(edge_weight == 0, edge_weight == 1)), \
+                "Edge weights must be either 0 or 1"
 
             # Apply graph convolution
             x = self.env_net[layer_idx](x, edge_index, edge_weight=edge_weight)
@@ -254,9 +264,14 @@ class CoGNN(nn.Module):
         # Final layer (decoder)
         x = self.env_net[-1](x)
 
-        edge_ratio_tensor = -1 * torch.ones(size=(len(self.env_net)-2,), device=x.device)
+            # Final validation
+        for i, ew in enumerate(self.edge_weights_by_layer):
+            assert torch.all(torch.logical_or(ew == 0, ew == 1)), f"In Model Edge weights in layer {i} are not binary at the end"
 
-        return x, edge_ratio_tensor
+        for i, ew in enumerate(self.edge_weights_by_layer):
+            print(f"Edge weights before return, layer {i}: {ew}")
+
+        return x, self.edge_weights_by_layer
 
     def create_edge_weight(self, edge_index: torch.Tensor, 
                             keep_in_prob: torch.Tensor, 
@@ -264,15 +279,24 @@ class CoGNN(nn.Module):
         u, v = edge_index
         edge_in_prob = keep_in_prob[v]
         edge_out_prob = keep_out_prob[u]
-        return edge_in_prob * edge_out_prob
+
+        edge_weight = edge_in_prob * edge_out_prob
+
+            # Assert that edge_weight is either 0 or 1
+        assert torch.all(torch.logical_or(edge_weight == 0, edge_weight == 1)), \
+            "Edge weights must be either 0 or 1"
+
+        return edge_weight
     
-def train_cognn(data, config=Config.Training):
+
+def train_cognn(data, config=Config.Training, model_path='cognn_model.pth'):
     """
     Training function for the CoGNN model with Cora dataset.
     
     Args:
         data: PyTorch Geometric data object with train/val/test masks.
         config: Training configuration.
+        model_path: Path to save the trained model.
     
     Returns:
         Trained model
@@ -315,7 +339,7 @@ def train_cognn(data, config=Config.Training):
             })
             pbar.update(1)
 
-        # Evaluate on the test set
+    # Evaluate on the test set
     model.eval()
     with torch.no_grad():
         out, _ = model(data.x, data.edge_index)
@@ -323,11 +347,72 @@ def train_cognn(data, config=Config.Training):
         test_accuracy = (test_pred == data.y[data.test_mask]).sum().item() / data.test_mask.sum().item()
     print(f"Test Accuracy: {test_accuracy:.4f}")
 
+    # Extract and save learned edge weights
+    with torch.no_grad():
+        model.eval()
+        model(data.x, data.edge_index)  # Forward pass to populate edge weights
+        #save_learned_edge_weights(model, data.edge_index)
+
+    # Save the entire model
+    torch.save({
+        'model_state_dict': model.state_dict()
+    }, model_path)
+    print(f"Model saved to {model_path}")
+
     return model
 
+
+
+def save_learned_edge_weights(model, edge_index, filename_prefix="edge_weights_layer"):
+    """
+    Save the learned edge weights for all layers.
+
+    Args:
+        model (CoGNN): Trained CoGNN model.
+        edge_index (Tensor): Edge indices of the graph.
+        filename_prefix (str): Prefix for the output files.
+    """
+    u, v = edge_index.cpu().numpy()
+
+    for layer_idx, edge_weights in enumerate(model.edge_weights_by_layer):
+        edge_weights = edge_weights.cpu().numpy()
+
+        # Create a weighted directed graph
+        G = nx.DiGraph()
+        for i in range(len(u)):
+            G.add_edge(int(u[i]), int(v[i]), weight=float(edge_weights[i]))  # Convert weight to Python float
+
+        # Visualize using PyVis
+        net = Network(notebook=False, directed=True)
+
+        # Add all nodes explicitly to avoid missing nodes
+        all_nodes = set(map(int, u)).union(set(map(int, v)))  # Ensure all nodes are Python integers
+        for node in all_nodes:
+            net.add_node(node, label=str(node))
+
+        # Add edges with weights
+        for src, tgt, data in G.edges(data=True):
+            net.add_edge(
+                src, tgt,
+                title=f"Weight: {data['weight']:.4f}",
+                value=float(data['weight'])  # Convert weight to Python float
+            )
+
+        # Save the graph as an HTML file
+        net.write_html(f"{filename_prefix}_{layer_idx}.html")
+
+
+
 if __name__ == "__main__":
+
+    torch.manual_seed(3)
     # Specify ratios for train, validation, and test sets
     cora_data = load_cora(train_ratio=0.6, val_ratio=0.2, test_ratio=0.2)
 
     # Train the model
     trained_model = train_cognn(cora_data)
+
+    # Save graphs for input and output action networks
+    edge_index = cora_data.edge_index
+
+

@@ -16,7 +16,6 @@ import yaml
 from pathlib import Path
 
 
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -93,8 +92,6 @@ class GAT(torch.nn.Module):
             return x
 
   
-
-
 class GATTrainer:
     def __init__(self, config: Dict[str, Any]):
         self.config = config
@@ -253,6 +250,7 @@ class GATTrainer:
         edge_index_bidirectional = torch.unique(edge_index_bidirectional, dim=1)
         print(f"Unique bidirectional edge_index shape: {edge_index_bidirectional.shape}")
         return edge_index_bidirectional#.t() for not being cora
+
 
     def train_model(self, trial: optuna.Trial = None):
         

@@ -4,9 +4,8 @@ from src.helpers.visualizing import *
 from src.helpers.datasets import *
 
 # URL of your local FastAPI endpoint
-URL = "http://localhost:8000/predict/"
+URL = "http://localhost:8000/predict_coGNN/"
 
-#CLOUD_URL = "https://cora-gat-image-196616273613.europe-west10.run.app/predict/"
 
 
 def test_predict_endpoint(target_node, num_hops=3):
@@ -28,7 +27,10 @@ def test_predict_endpoint(target_node, num_hops=3):
         node_idx=target_node, num_hops=num_hops, node_features=node_features, edges=edges, labels=labels
     )
 
-    net = visualize_subgraph_pyvis(input_data_dict, save=True)
+    #print("input_data_dict")
+    #print(input_data_dict)
+
+    #net = visualize_subgraph_pyvis(input_data_dict, save=True)
 
     # The subgraph extraction function now also has the target node we want to run prediction for
     target_node_idx = input_data_dict['target_node_idx']
@@ -47,20 +49,18 @@ def test_predict_endpoint(target_node, num_hops=3):
     result = response.json()
     
     print("Prediction Response Received.")
+    #print(result)
 
-    # Extract and process attention weights
-    #aw = result.get('attention_weights', [])
-    #print(f"Result: {result}")
-
+    print(f"Result edge index: {result['edge_index']}")
+    print(f"Result edge weights for layers: {result['edge_weights']}")
     print(f"Class Probabilities for Target Node: {result['class_probabilities'][target_node_idx]}")
 
     probs_predicted = result['class_probabilities'][target_node_idx]
-    
-    normalized_analysis = analyze_attention_weights(result)
 
-    visualize_analysis_with_layers(input_data_dict, normalized_analysis, target_node_idx, np.argmax(probs_predicted), target_label)
+    net = visualize_subgraph_with_layers_weightened(result['edge_index'], result['edge_weights'], input_data_dict['labels'], target_node_idx, np.argmax(result['class_probabilities'][target_node_idx]), target_label, save=True)
 
     return result, target_node_idx
+
 
     #except requests.exceptions.RequestException as e:
     #    print(f"Error connecting to the endpoint: {e}")
@@ -72,7 +72,7 @@ def test_predict_endpoint(target_node, num_hops=3):
 # Run the test
 if __name__ == "__main__":
 
-    target_node = 888  # Take 1000 as a good example
+    target_node = 4  # Take 1000 as a good example
     result, target_node_idx = test_predict_endpoint(target_node)
     target_class_probabilities = result['class_probabilities'][target_node_idx]
     predicted_class = target_class_probabilities.index(max(target_class_probabilities))

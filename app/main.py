@@ -7,6 +7,42 @@ from app.model import *
 from typing import List, Any
 from pydantic import BaseModel
 
+class Config:
+    """Centralized configuration for the CoGNN model"""
+    class Action:
+        # Action Network Configuration
+        ACTIVATION = F.relu # could be also F.relu but gelu has way better performance
+        DROPOUT = 0.5
+        HIDDEN_DIM = 32 # independent
+        NUM_LAYERS = 1
+        INPUT_DIM = 32 # needs to be the same as hidden dimension in environment network
+        OUTPUT_DIM = 2
+        AGG = 'sum'
+
+    class Environment:
+        # Environment Network Configuration
+        INPUT_DIM = 1433
+        OUTPUT_DIM = 7
+        NUM_LAYERS = 3 #3
+        DROPOUT = 0.5
+        HIDDEN_DIM = 32
+        LAYER_NORM = False
+        SKIP_CONNECTION = True
+        AGG = 'sum'
+
+    class Gumbel:
+        # Gumbel Softmax Configuration
+        TEMPERATURE = 0.5
+        TAU = 0.01
+        LEARN_TEMPERATURE = True
+
+    class Training:
+        # Training Hyperparameters
+        LEARNING_RATE = 0.001
+        WEIGHT_DECAY = 0
+        EPOCHS = 500
+        BATCH_SIZE = 32
+        DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def load_model_in_main():
     try:
@@ -25,7 +61,11 @@ def load_model_in_main():
 # Load model at startup
 model = load_model_in_main()
 
-print(model)
+config = Config()
+
+model_cognn = load_cognn_model(config)
+
+print(model_cognn)
 
 # Define the app
 app = FastAPI()
@@ -47,6 +87,17 @@ class PredictionResponse(BaseModel):
     model_output: List[List[float]]
     class_probabilities: List[List[float]]  # Probabilities for each node
     attention_weights: List[Any]  # Attention weights from each layer
+
+
+class PredictionResponse_coGNN(BaseModel):
+    """
+    Structured prediction response
+    """
+    edge_index: List[List[int]]
+    model_output: List[List[float]]
+    class_probabilities: List[List[float]]  # Probabilities for each node
+    edge_weights: List[List[float]]  # edge weights from each layer
+
 
 
 @app.post("/predict/", response_model=PredictionResponse)
@@ -87,6 +138,64 @@ async def predict(input_data: GraphInputData):
                 "model_output": output.tolist(),
                 "class_probabilities": probabilities,
                 "attention_weights": attention_weights,
+            }
+        
+    except Exception as e:
+        # Print full traceback for debugging
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+
+
+@app.post("/predict_coGNN/", response_model=PredictionResponse_coGNN)
+async def predict(input_data: GraphInputData):
+    try:
+        # Convert input to PyTorch tensors
+        x = torch.tensor(input_data.node_features, dtype=torch.float32)
+        edge_index = torch.tensor(input_data.edge_index, dtype=torch.long).t().contiguous()
+        
+        # Ensure model is in evaluation mode
+        model_cognn.eval()
+        
+        # Disable gradient computation for inference
+        with torch.no_grad():
+            # Get model prediction and attention weights
+            output, edge_weights = model_cognn(x, edge_index)
+
+            # Compute class probabilities
+            probabilities = torch.softmax(output, dim=1)
+            probabilities = probabilities.cpu().numpy()
+
+            # Handle NaN or infinite values
+            probabilities = np.nan_to_num(probabilities, nan=0.0, posinf=1.0, neginf=0.0)
+
+            # Convert to a list of lists with Python floats
+            probabilities = [[float(p) for p in prob] for prob in probabilities]
+
+            print(edge_weights)
+
+                # Final validation
+            for i, ew in enumerate(edge_weights):
+                assert torch.all(torch.logical_or(ew == 0, ew == 1)), f"MAIN APP Edge weights in layer {i} are not binary at the end"
+
+            # Convert attention weights to a serializable format
+            #print(edge_weights)
+            edge_weights = [
+                ew.cpu().tolist() if isinstance(ew, torch.Tensor) else []
+                for ew in edge_weights
+            ]
+
+            # Debug processed edge weights
+            print("Processed edge weights:")
+            print(edge_weights)
+
+            return {
+                "edge_index": edge_index.tolist(),
+                "model_output": output.tolist(),
+                "class_probabilities": probabilities,
+                "edge_weights": edge_weights,
             }
         
     except Exception as e:

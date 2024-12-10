@@ -1,8 +1,3 @@
-
-
-from pyvis.network import Network
-
-from pyvis.network import Network
 from pyvis.network import Network
 
 def visualize_analysis_with_layers(subgraph_data, analysis_results, target, predicted_class, target_label):
@@ -190,8 +185,8 @@ def visualize_analysis_with_layers_no_labels(subgraph_data, analysis_results, ta
 
     print("Graphs saved as HTML files for each layer and overall.")
 
-from pyvis.network import Network
-from pyvis.network import Network
+
+
 
 def visualize_subgraph_pyvis(subgraph_data, save=True):
     """
@@ -343,4 +338,85 @@ def visualize_subgraph_pyvis_no_labels(subgraph_data, save=True):
     if save:
         net.write_html('subgraph_visualization.html')
     return net.html
+
+
+
+from pyvis.network import Network
+def visualize_subgraph_with_layers_weightened(edge_index, edge_weights_by_layer, node_labels, target_node_idx, predicted_class, target_label, save=True):
+    """
+    Visualize subgraphs for each layer based on edge contributions using Pyvis with explicit directed edges.
+
+    Args:
+        edge_index (list): Edge indices of shape [2, num_edges], where the first row is source nodes and the second row is target nodes.
+        edge_weights_by_layer (list): List of edge weights for each layer. Each element is a list of weights (1 or 0).
+        node_labels (list): Labels for each node.
+        target_node_idx (int): Index of the target node.
+        predicted_class (int): Predicted class for the target node.
+        target_label (int): Original label of the target node.
+        save (bool): Whether to save visualizations as HTML files.
+    """
+    def create_network(layer_idx, edge_index, edge_weights, target_node_idx, predicted_class, target_label):
+        # Create a Pyvis network with directed graph option
+        net = Network(height="800px", width="100%", bgcolor="#222222", font_color="white", directed=True)
+
+        # Set global network physics options
+        net.set_options('''
+        var options = {
+          "physics": {
+            "forceAtlas2Based": {
+              "gravitationalConstant": -50,
+              "centralGravity": 0.01,
+              "springLength": 100,
+              "springConstant": 0.08
+            },
+            "minVelocity": 0.75,
+            "solver": "forceAtlas2Based"
+          }
+        }
+        ''')
+
+        # Define colors for each label class (0 to 6)
+        label_colors = {
+            0: "blue",
+            1: "green", 
+            2: "purple",
+            3: "orange",
+            4: "cyan",
+            5: "pink",
+            6: "yellow"
+        }
+
+        # Add nodes
+        unique_nodes = set(edge_index[0] + edge_index[1])  # Combine sources and targets
+        for node in unique_nodes:
+            label = node_labels[node]
+            color = "red" if node == target_node_idx else label_colors.get(label, "white")
+            size = 20 if node == target_node_idx else 10
+            node_title = (
+                f"Target Node (Predicted: {predicted_class}, Original: {target_label})"
+                if node == target_node_idx
+                else f"Node {node}, Label: {label}"
+            )
+            net.add_node(node, label=f"Node {node}", size=size, color=color, title=node_title)
+
+        # Add directed edges based on weights
+        for i, (source, target) in enumerate(zip(edge_index[0], edge_index[1])):
+            if edge_weights[i] == 1.0:  # Only add edges with weight 1
+                net.add_edge(
+                    source, target, 
+                    title=f"Edge: {source} -> {target} (Contributes)",
+                    arrows="to"  # Explicitly set arrow direction
+                )
+
+        return net
+
+    # Visualize each layer
+    for layer_idx, edge_weights in enumerate(edge_weights_by_layer):
+        net = create_network(layer_idx, edge_index, edge_weights, target_node_idx, predicted_class, target_label)
+        if save:
+            filename = f'weightend_subgraph_layer_{layer_idx}.html'
+            net.write_html(filename)
+            print(f"Layer {layer_idx} visualization saved to {filename}")
+
+    print("All layer graphs saved.")
 

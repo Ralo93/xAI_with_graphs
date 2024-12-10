@@ -210,6 +210,8 @@ def extract_subgraph(node_idx, num_hops, node_features, edges, labels):
     subgraph_edge_index = make_bidirectional(subgraph_edge_index)
     print(f"Edge index shape subgraph (after make_bidirectional): {subgraph_edge_index.shape}")
 
+    print(subgraph_edge_index)
+
     if subgraph_edge_index.dim() != 2 or subgraph_edge_index.size(0) != 2:
         print(f"Transposing edge index. Current shape: {subgraph_edge_index.shape}")
         subgraph_edge_index = subgraph_edge_index.t()
