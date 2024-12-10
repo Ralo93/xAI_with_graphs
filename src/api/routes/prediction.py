@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException
 import torch
 import numpy as np
-from typing import Any
 from ..schemas.graph import GraphInputData, PredictionResponse
 from ...models.model_registry import ModelRegistry
-from ...config.settings import get_settings
+from ...models.gat import GATConfig
+from ...config.settings import settings
 
 router = APIRouter()
 
@@ -17,17 +17,25 @@ async def predict(input_data: GraphInputData) -> PredictionResponse:
         edge_index = (
             torch.tensor(input_data.edge_index, dtype=torch.long).t().contiguous()
         )
+        print(f"Input tensor shapes: x={x.shape}, edge_index={edge_index.shape}")
 
-        # Get model from registry
-        settings = get_settings()
-        model = settings.MODEL
+        # Load model from registry
+        config = GATConfig(
+            in_channels=x.size(1),
+            hidden_channels=settings.MODEL_HIDDEN_CHANNELS,
+            out_channels=settings.MODEL_OUT_CHANNELS,
+            num_heads=4
+        )
+
+        model = ModelRegistry.load_model(
+            config=config,
+            model_path=settings.MODEL_PATH,
+            model_type=settings.MODEL_TYPE,
+        )
+
         model.eval()
-
         with torch.no_grad():
-            # Get predictions and attention weights
             output, attention_weights = model(x, edge_index)
-
-            # Compute probabilities
             probabilities = torch.softmax(output, dim=1)
             probabilities = np.nan_to_num(
                 probabilities.cpu().numpy(), nan=0.0, posinf=1.0, neginf=0.0
@@ -43,7 +51,4 @@ async def predict(input_data: GraphInputData) -> PredictionResponse:
             )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))

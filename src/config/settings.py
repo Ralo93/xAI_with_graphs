@@ -16,10 +16,11 @@ class Settings(BaseSettings):
 
     # Model Settings
     MODEL_PATH: Path = Path("models/artifacts/model.pth")
+    MODEL_TYPE: str = "GAT"
     MODEL_IN_CHANNELS: int = 1433
-    MODEL_HIDDEN_CHANNELS: int = 5
+    MODEL_HIDDEN_CHANNELS: int = 8
     MODEL_OUT_CHANNELS: int = 7
-    MODEL_NUM_HEADS: int = 5
+    MODEL_NUM_HEADS: int = 4
     MODEL_DROPOUT: float = 0.3
     MODEL: Optional[torch.nn.Module] = None
 

@@ -90,7 +90,7 @@ Access at http://localhost:5000
 1. **Start the API Server**
 ```bash
 # Using the new structure
-uvicorn src.api.main:app --host 0.0.0.0 --port 8080 --reload
+uvicorn src.api.app:app --host 0.0.0.0 --port 8080 --reload
 ```
 The API will be available at http://localhost:8080
 

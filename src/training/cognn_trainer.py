@@ -1,3 +1,5 @@
+from pathlib import Path
+from models.model_registry import ModelRegistry
 import torch
 from torch.nn import CrossEntropyLoss
 from torch.optim import Adam
@@ -93,6 +95,8 @@ class CoGNNTrainer:
                 if val_acc > best_val_accuracy:
                     best_val_accuracy = val_acc
                     mlflow.pytorch.log_model(model, "model")
+                    # Save the model locally
+                    ModelRegistry.save_model(model, Path("models/artifacts/model.pth"))
 
             if epoch % 10 == 0:
                 self.logger.info(

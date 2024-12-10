@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from .routes import prediction
 from ..config.settings import get_settings
 from ..models.model_registry import ModelRegistry
@@ -8,6 +9,14 @@ from ..models.gat import GATConfig
 def create_app() -> FastAPI:
     """Create and configure FastAPI application"""
     app = FastAPI(title="Graph Neural Network API")
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:3000"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     # Initialize settings and model
     settings = get_settings()

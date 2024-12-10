@@ -1,3 +1,5 @@
+from pathlib import Path
+from models.model_registry import ModelRegistry
 import torch
 import mlflow
 import logging
@@ -108,6 +110,8 @@ class GATTrainer:
                     best_val_acc = val_metrics["accuracy"]
                     early_stopping_counter = 0
                     mlflow.pytorch.log_model(model, "model")
+                    # Save the model locally
+                    ModelRegistry.save_model(model, Path("models/artifacts/model.pth"))
                 else:
                     early_stopping_counter += 1
 
