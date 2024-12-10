@@ -1,6 +1,6 @@
 # xAI_with_graphs
 
-This project implements explainable Graph Neural Networks for node classification, including GAT (Graph Attention Networks) and CoGNN models, with a FastAPI backend for inference.
+This project implements explainable Graph Neural Networks for node classification, including GAT (Graph Attention Networks) and CoGNN models, with a FastAPI backend for inference and a NextJS frontend for visualization.
 
 ## Installation Guide
 
