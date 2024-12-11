@@ -7,7 +7,6 @@ from src.helpers.datasets import *
 URL = "http://localhost:8000/predict_coGNN/"
 
 
-
 def test_predict_endpoint(target_node, num_hops=3):
     # Create a larger graph
     #node_features, edges = create_large_graph()
@@ -24,7 +23,7 @@ def test_predict_endpoint(target_node, num_hops=3):
 
     # Extract the subgraph for the target node
     input_data_dict = extract_subgraph(
-        node_idx=target_node, num_hops=num_hops, node_features=node_features, edges=edges, labels=labels
+        node_idx=target_node, num_hops=num_hops, node_features=node_features, edges=edges, labels=labels, take_all=False
     )
 
     #print("input_data_dict")
@@ -51,8 +50,8 @@ def test_predict_endpoint(target_node, num_hops=3):
     print("Prediction Response Received.")
     #print(result)
 
-    print(f"Result edge index: {result['edge_index']}")
-    print(f"Result edge weights for layers: {result['edge_weights']}")
+    #print(f"Result edge index: {result['edge_index']}")
+    #print(f"Result edge weights for layers: {result['edge_weights']}")
     print(f"Class Probabilities for Target Node: {result['class_probabilities'][target_node_idx]}")
 
     probs_predicted = result['class_probabilities'][target_node_idx]
@@ -72,7 +71,7 @@ def test_predict_endpoint(target_node, num_hops=3):
 # Run the test
 if __name__ == "__main__":
 
-    target_node = 4  # Take 1000 as a good example
+    target_node = 666  # Take 1000 as a good example
     result, target_node_idx = test_predict_endpoint(target_node)
     target_class_probabilities = result['class_probabilities'][target_node_idx]
     predicted_class = target_class_probabilities.index(max(target_class_probabilities))

@@ -168,30 +168,47 @@ def create_large_graph(num_nodes=50, num_features=1433):
 
     return node_features, edges
 
-
-def extract_subgraph(node_idx, num_hops, node_features, edges, labels):
+def extract_subgraph(node_idx, num_hops, node_features, edges, labels, take_all=False):
     """
-    Extract a k-hop subgraph for the specified node index.
+    Extract a k-hop subgraph for the specified node index, or return the whole graph if take_all is True.
 
     Args:
         node_idx (int): Target node index.
         num_hops (int): Number of hops for the subgraph.
         node_features (torch.Tensor): Tensor of node features.
         edges (torch.Tensor): Tensor of edges (shape: [num_edges, 2]).
+        labels (torch.Tensor): Tensor of node labels.
+        take_all (bool): If True, return the entire graph.
 
     Returns:
-        dict: Subgraph data with node features and edge index.
+        dict: Subgraph or whole graph data with node features and edge index.
     """
 
-    #TODO Put the labels somewhere here
-    
+    if take_all:
+        # Return the entire graph
+        print("Returning the entire graph.")
+        edge_index = make_bidirectional(edges)
+        edge_index = add_self_loops(edge_index=edge_index)[0]
+        edge_index = edge_index.t()
+
+                # Print dataset statistics
+        print(f"Node feature matrix shape of subgraph(x) but the whole graph: {node_features.shape}")
+        print(f"Edge index shape (original): {edge_index.shape}")
+
+        return {
+            "node_features": node_features.tolist(),
+            "edge_index": edge_index.tolist(),
+            "target_node_idx": node_idx,
+            "labels": labels.tolist(),
+        }
+
     # Transpose edges for PyTorch Geometric compatibility
     edge_index = edges
 
     print(f"Original graph after transposition: {edge_index.shape}")
 
     # Extract the k-hop subgraph
-    subset_nodes, subgraph_edge_index, mapping, edge_mask  = k_hop_subgraph(
+    subset_nodes, subgraph_edge_index, mapping, edge_mask = k_hop_subgraph(
         node_idx=node_idx, num_hops=num_hops, edge_index=edge_index, relabel_nodes=True
     )
 
@@ -199,18 +216,15 @@ def extract_subgraph(node_idx, num_hops, node_features, edges, labels):
 
     # Subset node features
     subgraph_node_features = node_features[subset_nodes]
-    
+
     # Print dataset statistics
     print(f"Node feature matrix shape of subgraph(x): {subgraph_node_features.shape}")
-    #print(f"Label tensor shape (y): {subgraph_edge_index.shape}")
     print(f"Edge index shape (original): {edge_index.shape}")
     print(f"Number of edges in subgraph size: {subgraph_edge_index.size(1)}")
-    
+
     # Make bidirectional and add self-loops
     subgraph_edge_index = make_bidirectional(subgraph_edge_index)
     print(f"Edge index shape subgraph (after make_bidirectional): {subgraph_edge_index.shape}")
-
-    print(subgraph_edge_index)
 
     if subgraph_edge_index.dim() != 2 or subgraph_edge_index.size(0) != 2:
         print(f"Transposing edge index. Current shape: {subgraph_edge_index.shape}")
@@ -223,23 +237,18 @@ def extract_subgraph(node_idx, num_hops, node_features, edges, labels):
     print(f"Subgraph Node Features Shape: {subgraph_node_features.shape}")
     print(f"Subgraph Edge Index Shape: {subgraph_edge_index.shape}")
 
-
     # Retrieve the new index of the target node in the subgraph
     target_node_subgraph_idx = mapping[0].item()
-    
+
     print(f"Subset nodes in subgraph: {subset_nodes}")
     print(f"Target node original index: {node_idx}")
     print(f"Target node index in subgraph: {target_node_subgraph_idx}")
 
-
-    # check if this fixes it, it actually does. There is some magic in transpositions, as they appear everywhere in the code... not good
     subgraph_edge_index = subgraph_edge_index.t()
-    #print(subgraph_edge_index)
     print(f"Subgraph target label (mapped): {labels[subset_nodes][target_node_subgraph_idx]}")
 
     print(f"Original target node label: {labels[node_idx]}")
     print(f"Subgraph target node label: {labels[subset_nodes][target_node_subgraph_idx]}")
-
 
     return {
         "node_features": subgraph_node_features.tolist(),
@@ -247,5 +256,6 @@ def extract_subgraph(node_idx, num_hops, node_features, edges, labels):
         "target_node_idx": target_node_subgraph_idx,
         "labels": labels[subset_nodes].tolist(),  # Add subset labels for inspection
     }
+
 
 

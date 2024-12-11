@@ -66,20 +66,20 @@ class Config:
     class Action:
         # Action Network Configuration
         ACTIVATION = F.relu # could be also F.relu but gelu has way better performance
-        DROPOUT = 0.5
-        HIDDEN_DIM = 32 # independent
+        DROPOUT = 0.2
+        HIDDEN_DIM = 16 # independent
         NUM_LAYERS = 1
-        INPUT_DIM = 32 # needs to be the same as hidden dimension in environment network
+        INPUT_DIM = 128 # needs to be the same as hidden dimension in environment network
         OUTPUT_DIM = 2
-        AGG = 'sum'
+        AGG = 'mean'
 
     class Environment:
         # Environment Network Configuration
         INPUT_DIM = 1433
         OUTPUT_DIM = 7
-        NUM_LAYERS = 3 #3
-        DROPOUT = 0.5
-        HIDDEN_DIM = 32
+        NUM_LAYERS = 3 #3 ALSO CHANGE IN MAIN.PY
+        DROPOUT = 0.2
+        HIDDEN_DIM = 128
         LAYER_NORM = False
         SKIP_CONNECTION = True
         AGG = 'sum'
@@ -94,7 +94,7 @@ class Config:
         # Training Hyperparameters
         LEARNING_RATE = 0.001
         WEIGHT_DECAY = 0
-        EPOCHS = 500
+        EPOCHS = 200
         BATCH_SIZE = 32
         DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -128,7 +128,7 @@ class ActionNet(nn.Module):
     def __init__(self, config=Config.Action):
         super().__init__()
         self.num_layers = config.NUM_LAYERS
-        self.dropout = nn.Dropout(config.DROPOUT)
+        
         self.act = config.ACTIVATION
 
         # Dynamic network creation based on layers
@@ -139,6 +139,7 @@ class ActionNet(nn.Module):
                 aggr=config.AGG  # Use aggregation method from config
             ) for i in range(config.NUM_LAYERS)
         ])
+        self.dropout = nn.Dropout(config.DROPOUT)
 
     def forward(self, x: torch.Tensor, edge_index: torch.Tensor, 
                 env_edge_attr: Optional[torch.Tensor] = None, 
@@ -163,14 +164,18 @@ class GraphLinear(Linear):
 class TempSoftPlus(nn.Module):
     def __init__(self, gumbel_config=Config.Gumbel, env_dim: int = Config.Environment.HIDDEN_DIM):
         super(TempSoftPlus, self).__init__()
-        self.linear_model = GraphLinear(env_dim, 1, bias=False)  # Simple linear model for demonstration
+        self.linear_model = GraphLinear(env_dim, 1, bias=False)
+        self.linear_model = nn.ModuleList([GraphLinear(env_dim, 1, bias=False) for _ in range(1)])
+
+        #self.linear_model = nn.ModuleList(GraphLinear(env_dim, 1, bias=False))  # Simple linear model for demonstration
         self.tau0 = gumbel_config.TAU
         self.learn_temp = gumbel_config.LEARN_TEMPERATURE
         self.softplus = nn.Softplus(beta=1)
 
     def forward(self, x: Tensor, edge_index: Optional[Tensor] = None) -> Tensor:
         # Pass only x to linear_model, as edge_index is unused here
-        x = self.linear_model(x)
+        for layer in self.linear_model:
+            x = layer(x)
         x = self.softplus(x) + self.tau0
         temp = x.pow(-1)
         return temp.masked_fill(temp == float('inf'), 0.0)
@@ -238,21 +243,21 @@ class CoGNN(nn.Module):
             in_logits = self.in_act_net(x, edge_index)
             out_logits = self.out_act_net(x, edge_index)
 
-            temp = self.temp_model(x=x, edge_index=edge_index) if self.learn_temp else self.temp
+            temp = self.temp_model(x, edge_index) if self.learn_temp else self.temp
             #print(temp)
 
             # Gumbel Softmax
             in_probs = F.gumbel_softmax(logits=in_logits, tau=temp, hard=True)
             out_probs = F.gumbel_softmax(logits=out_logits, tau=temp, hard=True)
 
-            print(f"in_probs: {in_probs}")
-            print(f"out_probs: {out_probs}")
+            #print(f"in_probs: {in_probs}")
+            #print(f"out_probs: {out_probs}")
 
             # Create edge weights
             edge_weight = self.create_edge_weight(edge_index, in_probs[:, 0], out_probs[:, 0])
             self.edge_weights_by_layer.append(edge_weight) 
 
-            print(f"Edge weights in layer {layer_idx}: {self.edge_weights_by_layer[-1]}")
+            #print(f"Edge weights in layer {layer_idx}: {self.edge_weights_by_layer[-1]}")
 
             assert torch.all(torch.logical_or(edge_weight == 0, edge_weight == 1)), \
                 "Edge weights must be either 0 or 1"
@@ -268,8 +273,8 @@ class CoGNN(nn.Module):
         for i, ew in enumerate(self.edge_weights_by_layer):
             assert torch.all(torch.logical_or(ew == 0, ew == 1)), f"In Model Edge weights in layer {i} are not binary at the end"
 
-        for i, ew in enumerate(self.edge_weights_by_layer):
-            print(f"Edge weights before return, layer {i}: {ew}")
+        #for i, ew in enumerate(self.edge_weights_by_layer):
+        #    print(f"Edge weights before return, layer {i}: {ew}")
 
         return x, self.edge_weights_by_layer
 
@@ -289,7 +294,7 @@ class CoGNN(nn.Module):
         return edge_weight
     
 
-def train_cognn(data, config=Config.Training, model_path='cognn_model.pth'):
+def train_cognn(data, config=Config.Training, model_path='cognn_model_my.pth'):
     """
     Training function for the CoGNN model with Cora dataset.
     
@@ -353,6 +358,9 @@ def train_cognn(data, config=Config.Training, model_path='cognn_model.pth'):
         model(data.x, data.edge_index)  # Forward pass to populate edge weights
         #save_learned_edge_weights(model, data.edge_index)
 
+    print("Model state dictionary keys:")
+    for key in model.state_dict().keys():
+        print(key)
     # Save the entire model
     torch.save({
         'model_state_dict': model.state_dict()

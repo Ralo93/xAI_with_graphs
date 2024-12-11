@@ -25,7 +25,7 @@ def test_predict_endpoint(target_node, num_hops=3):
 
     # Extract the subgraph for the target node
     input_data_dict = extract_subgraph(
-        node_idx=target_node, num_hops=num_hops, node_features=node_features, edges=edges, labels=labels
+        node_idx=target_node, num_hops=num_hops, node_features=node_features, edges=edges, labels=labels, take_all=False
     )
 
     net = visualize_subgraph_pyvis(input_data_dict, save=True)
@@ -72,7 +72,7 @@ def test_predict_endpoint(target_node, num_hops=3):
 # Run the test
 if __name__ == "__main__":
 
-    target_node = 888  # Take 1000 as a good example
+    target_node = 1000  # Take 1000 as a good example
     result, target_node_idx = test_predict_endpoint(target_node)
     target_class_probabilities = result['class_probabilities'][target_node_idx]
     predicted_class = target_class_probabilities.index(max(target_class_probabilities))

@@ -13,19 +13,19 @@ class Config:
         # Action Network Configuration
         ACTIVATION = F.relu # could be also F.relu but gelu has way better performance
         DROPOUT = 0.5
-        HIDDEN_DIM = 32 # independent
+        HIDDEN_DIM = 16 # independent
         NUM_LAYERS = 1
-        INPUT_DIM = 32 # needs to be the same as hidden dimension in environment network
+        INPUT_DIM = 128 # needs to be the same as hidden dimension in environment network
         OUTPUT_DIM = 2
-        AGG = 'sum'
+        AGG = 'mean'
 
     class Environment:
         # Environment Network Configuration
         INPUT_DIM = 1433
         OUTPUT_DIM = 7
-        NUM_LAYERS = 3 #3
+        NUM_LAYERS = 3 #3 #3 ALSO CHANGE IN coGNN_main.PY
         DROPOUT = 0.5
-        HIDDEN_DIM = 32
+        HIDDEN_DIM = 128
         LAYER_NORM = False
         SKIP_CONNECTION = True
         AGG = 'sum'
@@ -174,22 +174,19 @@ async def predict(input_data: GraphInputData):
             # Convert to a list of lists with Python floats
             probabilities = [[float(p) for p in prob] for prob in probabilities]
 
-            print(edge_weights)
-
                 # Final validation
             for i, ew in enumerate(edge_weights):
                 assert torch.all(torch.logical_or(ew == 0, ew == 1)), f"MAIN APP Edge weights in layer {i} are not binary at the end"
 
-            # Convert attention weights to a serializable format
-            #print(edge_weights)
+            # Convert edge weights to a serializable format
             edge_weights = [
                 ew.cpu().tolist() if isinstance(ew, torch.Tensor) else []
                 for ew in edge_weights
             ]
 
             # Debug processed edge weights
-            print("Processed edge weights:")
-            print(edge_weights)
+            #print("Processed edge weights:")
+            #print(edge_weights)
 
             return {
                 "edge_index": edge_index.tolist(),

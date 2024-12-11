@@ -41,7 +41,7 @@ class ActionNet(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.num_layers = config.NUM_LAYERS
-        self.dropout = nn.Dropout(config.DROPOUT)
+        
         self.act = config.ACTIVATION
 
         # Dynamic network creation based on layers
@@ -52,6 +52,7 @@ class ActionNet(nn.Module):
                 aggr=config.AGG  # Use aggregation method from config
             ) for i in range(config.NUM_LAYERS)
         ])
+        self.dropout = nn.Dropout(config.DROPOUT)
 
     def forward(self, x: torch.Tensor, edge_index: torch.Tensor, 
                 env_edge_attr: Optional[torch.Tensor] = None, 
@@ -76,14 +77,16 @@ class GraphLinear(Linear):
 class TempSoftPlus(nn.Module):
     def __init__(self, gumbel_config, env_dim):
         super(TempSoftPlus, self).__init__()
-        self.linear_model = GraphLinear(env_dim, 1, bias=False)  # Simple linear model for demonstration
+        self.linear_model = GraphLinear(env_dim, 1, bias=False)
+        self.linear_model = nn.ModuleList([GraphLinear(env_dim, 1, bias=False) for _ in range(1)])
         self.tau0 = gumbel_config.TAU
         self.learn_temp = gumbel_config.LEARN_TEMPERATURE
         self.softplus = nn.Softplus(beta=1)
 
     def forward(self, x: torch.Tensor, edge_index: Optional[Tensor] = None) -> Tensor:
         # Pass only x to linear_model, as edge_index is unused here
-        x = self.linear_model(x)
+        for layer in self.linear_model:
+            x = layer(x)
         x = self.softplus(x) + self.tau0
         temp = x.pow(-1)
         return temp.masked_fill(temp == float('inf'), 0.0)
@@ -157,7 +160,7 @@ class CoGNN(nn.Module):
             in_logits = self.in_act_net(x, edge_index)
             out_logits = self.out_act_net(x, edge_index)
 
-            temp = self.temp_model(x=x, edge_index=edge_index) if self.learn_temp else self.temp
+            temp = self.temp_model(x, edge_index) if self.learn_temp else self.temp
             #print(temp)
 
             # Gumbel Softmax
@@ -408,13 +411,27 @@ def load_cognn_model(
         env_args=env_args, 
         action_args=action_args
     )
+
+    print("Model state dictionary keys:")
+    for key in model.state_dict().keys():
+        print(key)
     
     # Load the model checkpoint
     try:
-        checkpoint = torch.load(model_path, map_location='cpu')
+        #checkpoint = torch.load(model_path, map_location='cpu')
         
         # Load the model state dictionary
+        #model.load_state_dict(checkpoint['model_state_dict']) #TODO change back 
+                # Load the checkpoint
+
+        # for my checkpoints:
+        checkpoint = torch.load(f'cognn_model.pth')
+        #checkpoint = torch.load(f'best_model_fold_{num_fold}.pth')
+
+        # Extract the model state_dict
         model.load_state_dict(checkpoint['model_state_dict'])
+
+        #model.to(device)
         
         # Optional: print out additional information from the checkpoint
         print(f"Loaded coGNN model")
