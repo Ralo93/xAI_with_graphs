@@ -216,7 +216,6 @@ class CoGNN(nn.Module):
         # Dropout
         self.dropout = nn.Dropout(p=env_args.DROPOUT)
         
-
         # Action networks
         self.in_act_net = ActionNet(action_args)
         self.out_act_net = ActionNet(action_args)

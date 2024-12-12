@@ -148,7 +148,6 @@ async def predict(input_data: GraphInputData):
     
 
 
-
 @app.post("/predict_coGNN/", response_model=PredictionResponse_coGNN)
 async def predict(input_data: GraphInputData):
     try:

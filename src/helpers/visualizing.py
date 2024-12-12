@@ -1,5 +1,7 @@
 from pyvis.network import Network
 
+from pyvis.network import Network
+
 def visualize_analysis_with_layers(subgraph_data, analysis_results, target, predicted_class, target_label):
     """
     Visualize the subgraph with layered attributes using Pyvis, maintaining consistent node positions.
@@ -11,36 +13,10 @@ def visualize_analysis_with_layers(subgraph_data, analysis_results, target, pred
         predicted_class (int): Predicted class for the target node.
         target_label (int): Original label of the target node.
     """
-    # First create a reference network to calculate positions
-    reference_net = Network(height="800px", width="100%", bgcolor="#222222", font_color="white")
-    
-    # Set physics options for initial position calculation
-    reference_net.set_options('''
-    var options = {
-      "physics": {
-        "forceAtlas2Based": {
-          "gravitationalConstant": -50,
-          "centralGravity": 0.01,
-          "springLength": 100,
-          "springConstant": 0.08
-        },
-        "minVelocity": 0.75,
-        "solver": "forceAtlas2Based"
-      }
-    }
-    ''')
 
     # Add all nodes to reference network to calculate positions
     nodes = set(node for edge in subgraph_data['edge_index'] for node in edge)
-    for node in nodes:
-        reference_net.add_node(node)
     
-    # Add edges to reference network
-    for edge in subgraph_data['edge_index']:
-        reference_net.add_edge(edge[0], edge[1])
-    
-    # Save reference network to get positions
-    reference_net.write_html('reference_layout.html')
     
     def create_network(layer_name, graph_data, target, predicted_class):
         net = Network(height="800px", width="100%", bgcolor="#222222", font_color="white")
@@ -79,7 +55,7 @@ def visualize_analysis_with_layers(subgraph_data, analysis_results, target, pred
                     else f"Node {node}, Label: {label}\nContribution: {contribution:.4f}"
                 )
             else:
-                node_label = None
+                node_label = str(label)
 
             # Use the same x, y coordinates as in reference network
             net.add_node(
@@ -88,8 +64,6 @@ def visualize_analysis_with_layers(subgraph_data, analysis_results, target, pred
                 size=size,
                 color=color,
                 title=node_label,
-                #x=reference_net.nodes[node]['x'],
-                #y=reference_net.nodes[node]['y']
             )
 
         # Add edges with weights
@@ -199,8 +173,8 @@ def visualize_subgraph_with_layers_weightened(
                 size=size,
                 color=color,
                 title=node_title,
-                x=node_positions[node]['x'],
-                y=node_positions[node]['y']
+          #      x=node_positions[node]['x'],
+           #     y=node_positions[node]['y']
             )
 
         # Count edges with weight = 1
@@ -230,14 +204,6 @@ def visualize_subgraph_with_layers_weightened(
             filename = f'weightened_subgraph_layer_{layer_idx}.html'
             net.write_html(filename)
             print(f"Layer {layer_idx} visualization saved to {filename}")
-
-    #print(f"Total number of directed edges kept (weight = 1): {total_kept_edges}")
-
-# Example Usage:
-# visualize_subgraph_with_layers_weightened_and_count_edges(
-#     edge_index, edge_weights_by_layer, node_labels, target_node_idx, predicted_class, target_label
-# )
-
 
 
 def visualize_subgraph_pyvis(subgraph_data, save=True):
@@ -331,8 +297,8 @@ def visualize_subgraph_pyvis(subgraph_data, save=True):
             size=get_node_size(idx), 
             color=get_node_color(idx), 
             title=node_title,
-            x=reference_net.nodes[idx]['x'],
-            y=reference_net.nodes[idx]['y']
+#            x=reference_net.nodes[idx]['x'],
+ #           y=reference_net.nodes[idx]['y']
         )
     
     # Add edges

@@ -24,43 +24,96 @@ def test_predict_endpoint(target_node, num_hops=3):
     print(f"target label: {int(target_label)}")
 
     # Extract the subgraph for the target node
-    input_data_dict = extract_subgraph(
+    input_data_dict_subgraph = extract_subgraph(
         node_idx=target_node, num_hops=num_hops, node_features=node_features, edges=edges, labels=labels, take_all=False
     )
+    print("shapes")
+    print(type(input_data_dict_subgraph))  # To confirm it's a dictionary
+    print(input_data_dict_subgraph.keys())  # To see what keys the dictionary contains
 
-    net = visualize_subgraph_pyvis(input_data_dict, save=True)
+        # Extract the subgraph for the target node
+    input_data_dict_all = extract_subgraph(
+        node_idx=target_node, num_hops=num_hops, node_features=node_features, edges=edges, labels=labels, take_all=True
+    )
+    print(type(input_data_dict_all))  # To confirm it's a dictionary
+    print(input_data_dict_all.keys())  # To see what keys the dictionary contains
+
+#    net = visualize_subgraph_pyvis(input_data_dict, save=True)
 
     # The subgraph extraction function now also has the target node we want to run prediction for
-    target_node_idx = input_data_dict['target_node_idx']
+    target_node_idx_subgraph = input_data_dict_subgraph['target_node_idx']
+    target_node_idx_all = input_data_dict_all['target_node_idx']
+
+    #assert target_node_idx == target_node_idx_all
 
     # get it out again because the request does not expect it
-    del input_data_dict['target_node_idx']
+    del input_data_dict_subgraph['target_node_idx']
+    del input_data_dict_all['target_node_idx']
 
     #try:
     print("Sending Subgraph to Prediction Endpoint...")
-    response = requests.post(URL, json=input_data_dict)
+    response = requests.post(URL, json=input_data_dict_subgraph)
+
+    #try:
+    print("Sending Subgraph to Prediction Endpoint...")
+    response_all = requests.post(URL, json=input_data_dict_all)
 
     # Check response status
     response.raise_for_status()
+        # Check response status
+    response_all.raise_for_status()
 
     # Parse the response
-    result = response.json()
+    result_subgraph = response.json()
+        # Parse the response
+
+    result_all = response_all.json()
     
     print("Prediction Response Received.")
 
     # Extract and process attention weights
-    #aw = result.get('attention_weights', [])
-    #print(f"Result: {result}")
+    aw_subgraph = result_subgraph.get('attention_weights', [])
+    #print(f"Result subgraph: {aw_subgraph}")
 
-    print(f"Class Probabilities for Target Node: {result['class_probabilities'][target_node_idx]}")
+    # Convert to NumPy array for shape inspection
+    array_data_sub = np.array(aw_subgraph)
 
-    probs_predicted = result['class_probabilities'][target_node_idx]
+    # Get the shape
+    print("Shape of the data for SUB:", array_data_sub.shape)
+
+    # Extract and process attention weights
+    aw_all = result_all.get('attention_weights', [])
+    #print(f"Result all: {aw_all}")
+        # Convert to NumPy array for shape inspection
+    array_data_all = np.array(aw_all)
+
+    # Get the shape
+    print("Shape of the data for ALL:", array_data_all.shape)
+
+    # Flatten both arrays to compare element-wise
+    array_data_flat = array_data_sub.flatten()
+    another_array_flat = array_data_all.flatten()
+
+    # Check if all elements in `array_data` are in `another_array`
+    is_subset = np.all(np.isin(array_data_flat, another_array_flat))
+
+    print("Is array_data a subset of another_array?", is_subset)
+
+    print(f"Class Probabilities for Target Node SUB: {result_subgraph['class_probabilities'][target_node_idx_subgraph]}")
+    print(f"Class Probabilities for Target Node ALL: {result_all['class_probabilities'][target_node_idx_all]}")
+
+    probs_predicted_sub = result_subgraph['class_probabilities'][target_node_idx_subgraph]
+    #probs_predicted_all = result_all['class_probabilities'][target_node_idx_all]
     
-    normalized_analysis = analyze_attention_weights(result)
+    normalized_analysis_subgraph = analyze_attention_weights(result_subgraph)
 
-    visualize_analysis_with_layers(input_data_dict, normalized_analysis, target_node_idx, np.argmax(probs_predicted), target_label)
+    #print(normalized_analysis_subgraph)
+    #normalized_analysis_all = analyze_attention_weights(result_all)
+    #print(normalized_analysis_all)
 
-    return result, target_node_idx
+    visualize_analysis_with_layers(input_data_dict_subgraph, normalized_analysis_subgraph, target_node_idx_subgraph, np.argmax(probs_predicted_sub), target_label)
+
+    return result_subgraph, target_node_idx_subgraph
 
     #except requests.exceptions.RequestException as e:
     #    print(f"Error connecting to the endpoint: {e}")
@@ -72,9 +125,12 @@ def test_predict_endpoint(target_node, num_hops=3):
 # Run the test
 if __name__ == "__main__":
 
-    target_node = 1000  # Take 1000 as a good example
+    target_node = 1002  # Take 1000 as a good example
     result, target_node_idx = test_predict_endpoint(target_node)
     target_class_probabilities = result['class_probabilities'][target_node_idx]
     predicted_class = target_class_probabilities.index(max(target_class_probabilities))
     print(f"Predicted class for target node: {predicted_class}")
 
+
+
+    
