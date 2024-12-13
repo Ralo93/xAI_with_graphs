@@ -1,6 +1,299 @@
 from pyvis.network import Network
 
+def visualize_subgraph_with_consistent_layout(
+    edge_index, edge_weights_by_layer, node_labels, target_node_idx, predicted_class, target_label, save=True
+):
+    """
+    Visualize subgraphs for each layer based on edge contributions using Pyvis with explicit directed edges,
+    count edges with weight = 1, and ensure the same node positioning across all layers.
+
+    Additionally, save the original graph with the same layout.
+
+    Args:
+        edge_index (list): Edge indices of shape [2, num_edges], where the first row is source nodes and the second row is target nodes.
+        edge_weights_by_layer (list): List of edge weights for each layer. Each element is a list of weights (1 or 0).
+        node_labels (list): Labels for each node.
+        target_node_idx (int): Index of the target node.
+        predicted_class (int): Predicted class for the target node.
+        target_label (int): Original label of the target node.
+        save (bool): Whether to save visualizations as HTML files.
+    """
+    from pyvis.network import Network
+    import math
+
+    # Get all unique nodes
+    unique_nodes = list(set(edge_index[0] + edge_index[1]))
+
+    # Define colors for each label class
+    label_colors = {
+        0: "blue",
+        1: "green",
+        2: "purple",
+        3: "orange",
+        4: "cyan",
+        5: "pink",
+        6: "yellow"
+    }
+
+    # Calculate circular layout manually
+    def circular_layout(nodes):
+        layout = {}
+        n = len(nodes)
+        radius = 500  # Adjust radius as needed
+        for i, node in enumerate(nodes):
+            angle = 2 * math.pi * i / n
+            layout[node] = {
+                'x': radius * math.cos(angle),
+                'y': radius * math.sin(angle)
+            }
+        return layout
+
+    # Create manual layout (consistent for all layers)
+    node_positions = circular_layout(unique_nodes)
+
+    def create_network(layer_idx, edge_index, edge_weights=None, directed=True):
+        # Create network with directed or undirected graph option
+        net = Network(height="800px", width="100%", bgcolor="#222222", font_color="white", directed=directed)
+
+        # Disable physics to maintain consistent positions
+        net.set_options('''
+        var options = {
+          "physics": {
+            "enabled": false
+          }
+        }
+        ''')
+
+        # Add nodes with predefined positions
+        for node in unique_nodes:
+            label = node_labels[node]
+            color = "red" if node == target_node_idx else label_colors.get(label, "white")
+            size = 40 if node == target_node_idx else 10
+            node_title = (
+                f"Target Node (Predicted: {predicted_class}, Original: {target_label})"
+                if node == target_node_idx
+                else f"Node {node}"
+            )
+
+            net.add_node(
+                node,
+                label=f"Node {node}" if node == target_node_idx else "",
+                size=size,
+                color=color,
+                title=node_title,
+                x=node_positions[node]['x'],
+                y=node_positions[node]['y']
+            )
+
+        # Count edges with weight = 1
+        kept_edges_count = 0
+
+        # Add edges
+        for i, (source, target) in enumerate(zip(edge_index[0], edge_index[1])):
+            if edge_weights is None or edge_weights[i] == 1.0:  # Add all edges or only edges with weight 1
+                kept_edges_count += 1
+                net.add_edge(
+                    source, target,
+                    title=f"Edge: {source} -> {target} (Contributes)" if edge_weights else f"Edge: {source} -> {target}"
+                )
+                if not directed:
+                    net.add_edge(
+                        target, source,
+                        title=f"Edge: {target} -> {source} (Contributes)" if edge_weights else f"Edge: {target} -> {source}"
+                    )
+
+        return net, kept_edges_count
+
+    # Save the original graph
+    if save:
+        original_net, _ = create_network(-1, edge_index, directed=False)
+        original_filename = 'consistent_layout_original_graph.html'
+        original_net.write_html(original_filename)
+        print(f"Original graph visualization saved to {original_filename}")
+
+    # Visualize each layer and count edges
+    total_kept_edges = 0
+    for layer_idx, edge_weights in enumerate(edge_weights_by_layer):
+        net, kept_edges_count = create_network(
+            layer_idx, edge_index, edge_weights
+        )
+        print(f"Kept edges for layer {layer_idx}: {kept_edges_count}")
+        total_kept_edges += kept_edges_count
+        if save:
+            filename = f'consistent_layout_subgraph_layer_{layer_idx}.html'
+            net.write_html(filename)
+            print(f"Layer {layer_idx} visualization saved to {filename}")
+
 from pyvis.network import Network
+import networkx as nx
+
+def visualize_analysis_with_layers_and_importance(subgraph_data, analysis_results, target, predicted_class, target_label):
+    """
+    Visualize the subgraph with layered attributes using Pyvis, maintaining consistent node positions.
+
+    Args:
+        subgraph_data (dict): Subgraph data containing node features, edge index, and target node index.
+        analysis_results (dict): Layered analysis results with node contributions and edge weights.
+        target (int): Index of the target node.
+        predicted_class (int): Predicted class for the target node.
+        target_label (int): Original label of the target node.
+    """
+
+    # Validate inputs
+    def validate_input_data(subgraph_data, analysis_results):
+        if 'edge_index' not in subgraph_data or not isinstance(subgraph_data['edge_index'], list):
+            raise ValueError("Invalid or missing 'edge_index' in subgraph_data.")
+        if 'labels' not in subgraph_data or not isinstance(subgraph_data['labels'], dict):
+            raise ValueError("Invalid or missing 'labels' in subgraph_data.")
+        if 'layers' not in analysis_results or not isinstance(analysis_results['layers'], list):
+            raise ValueError("Invalid or missing 'layers' in analysis_results.")
+        if 'overall' not in analysis_results:
+            raise ValueError("Missing 'overall' in analysis_results.")
+
+    validate_input_data(subgraph_data, analysis_results)
+
+    # Extract unique nodes
+    nodes = set(node for edge in subgraph_data['edge_index'] for node in edge)
+
+    # Create consistent node positions using NetworkX
+    G = nx.Graph()
+    G.add_edges_from(subgraph_data['edge_index'])
+    positions = nx.spring_layout(G, seed=42)  # Seed for reproducibility
+
+    # Define colors for each label class
+    label_colors = {
+        0: "blue",
+        1: "green",
+        2: "purple",
+        3: "orange",
+        4: "cyan",
+        5: "pink",
+        6: "yellow"
+    }
+
+    def create_network(layer_name, graph_data, target, predicted_class):
+        net = Network(height="800px", width="100%", bgcolor="#222222", font_color="white")
+
+        # Disable physics to maintain positions
+        net.set_options('''
+        var options = {
+          "physics": {
+            "enabled": false
+          }
+        }
+        ''')
+
+        # Add nodes with consistent positions
+        for node in nodes:
+            label = subgraph_data['labels'][node]
+            contribution = next((n['normalized_contribution'] for n in graph_data['top_nodes'] if n['index'] == node), 0)
+            size = 20 if node == target else 10 + contribution * 50
+            color = "red" if node == target else label_colors.get(label, "white")
+
+            node_label = (
+                f"Target Node (Predicted: {predicted_class}, Original: {target_label})"
+                if node == target
+                else f"Node {node}, Label: {label}\nContribution: {contribution:.4f}"
+            )
+
+            x, y = positions[node]
+            net.add_node(
+                node,
+                label=node_label,
+                size=size,
+                color=color,
+                title=node_label,
+                x=x * 1000,
+                y=y * 1000
+            )
+
+        # Add edges with weights
+        for edge in subgraph_data['edge_index']:
+            source, target_edge = edge
+            weight = next((e['normalized_weight'] for e in graph_data['top_edges'] 
+                         if e['source'] == source and e['target'] == target_edge), 0)
+            net.add_edge(
+                source, target_edge,
+                width=1 + weight * 10,
+                title=f"Edge Weight: {weight:.4f}"
+            )
+
+        return net
+
+    def create_sender_receiver_network(graph_data, is_sender):
+        net = Network(height="800px", width="100%", bgcolor="#222222", font_color="white")
+
+        # Disable physics to maintain positions
+        net.set_options('''
+        var options = {
+          "physics": {
+            "enabled": false
+          }
+        }
+        ''')
+
+        # Compute sending or receiving importance
+        node_importance = {node: 0 for node in nodes}
+        for edge in subgraph_data['edge_index']:
+            source, target = edge
+            for layer in analysis_results['layers']:
+                for edge_info in layer['top_edges']:
+                    if edge_info['source'] == source and edge_info['target'] == target:
+                        if is_sender:
+                            node_importance[source] += edge_info['normalized_weight']
+                        else:
+                            node_importance[target] += edge_info['normalized_weight']
+
+        # Normalize importance
+        max_importance = max(node_importance.values()) or 1
+        for node in nodes:
+            node_importance[node] /= max_importance
+
+        # Add nodes with importance values
+        for node in nodes:
+            label = subgraph_data['labels'][node]
+            size = 20 if node == target else 10 + node_importance[node] * 50
+            color = "red" if node == target else label_colors.get(label, "white")
+
+            x, y = positions[node]
+            net.add_node(
+                node,
+                label=f"Node {node}\nImportance: {node_importance[node]:.2f}",
+                size=size,
+                color=color,
+                title=f"Node {node}\nImportance: {node_importance[node]:.2f}",
+                x=x * 1000,
+                y=y * 1000
+            )
+
+        # Add edges
+        for edge in subgraph_data['edge_index']:
+            source, target = edge
+            net.add_edge(source, target, width=1, color="grey")
+
+        return net
+
+    # Generate and save visualizations for each layer
+    for layer in analysis_results['layers']:
+        layer_number = layer['layer_number']
+        net = create_network(f"Layer {layer_number}", layer, target, predicted_class)
+        net.write_html(f'subgraph_layer_{layer_number}.html')
+
+    # Generate and save overall visualization
+    overall_graph = analysis_results['overall']
+    net = create_network("Overall", overall_graph, target, predicted_class)
+    net.write_html('subgraph_overall.html')
+
+    # Generate and save sender importance visualization
+    sender_net = create_sender_receiver_network(subgraph_data, is_sender=True)
+    sender_net.write_html('subgraph_sender_importance.html')
+
+    # Generate and save receiver importance visualization
+    receiver_net = create_sender_receiver_network(subgraph_data, is_sender=False)
+    receiver_net.write_html('subgraph_receiver_importance.html')
+
+    print("Graphs saved as HTML files for each layer, overall, sender importance, and receiver importance with consistent node positions.")
+
 
 def visualize_analysis_with_layers(subgraph_data, analysis_results, target, predicted_class, target_label):
     """
@@ -46,7 +339,7 @@ def visualize_analysis_with_layers(subgraph_data, analysis_results, target, pred
             label = subgraph_data['labels'][node]
             contribution = next((n['normalized_contribution'] for n in graph_data['top_nodes'] if n['index'] == node), 0)
             size = 20 if node == target else 10 + contribution * 50
-            color = "black" if node == target else label_colors.get(label, "white")
+            color = "red" if node == target else label_colors.get(label, "white")
             
             if contribution > 0.01 or node == target:
                 node_label = (
@@ -160,7 +453,7 @@ def visualize_subgraph_with_layers_weightened(
         for node in unique_nodes:
             label = node_labels[node]
             color = "red" if node == target_node_idx else label_colors.get(label, "white")
-            size = 20 if node == target_node_idx else 10
+            size = 40 if node == target_node_idx else 10
             node_title = (
                 f"Target Node (Predicted: {predicted_class}, Original: {target_label})"
                 if node == target_node_idx
@@ -172,9 +465,7 @@ def visualize_subgraph_with_layers_weightened(
                 label=f"Node {node}",
                 size=size,
                 color=color,
-                title=node_title,
-          #      x=node_positions[node]['x'],
-           #     y=node_positions[node]['y']
+                title=node_title
             )
 
         # Count edges with weight = 1
@@ -285,7 +576,7 @@ def visualize_subgraph_pyvis(subgraph_data, save=True):
     
     def get_node_color(idx):
         # Target node is always black; others depend on their labels
-        return "black" if idx == target_node_idx else label_colors.get(labels[idx], "white")
+        return "red" if idx == target_node_idx else label_colors.get(labels[idx], "white")
     
     # Add nodes with consistent positions
     for idx in nodes:
@@ -296,9 +587,7 @@ def visualize_subgraph_pyvis(subgraph_data, save=True):
             label=f"Node {idx}" if idx != target_node_idx else f"{idx} Target Node with Label ({labels[idx]})",
             size=get_node_size(idx), 
             color=get_node_color(idx), 
-            title=node_title,
-#            x=reference_net.nodes[idx]['x'],
- #           y=reference_net.nodes[idx]['y']
+            title=node_title
         )
     
     # Add edges
@@ -376,7 +665,7 @@ def visualize_subgraph_pyvis_no_labels(subgraph_data, save=True):
         return 15 if idx == target_node_idx else 10
     
     def get_node_color(idx):
-        return 'red' if idx == target_node_idx else 'blue'
+        return 'black' if idx == target_node_idx else 'blue'
     
     # Add nodes with consistent positions
     for idx in nodes:
@@ -466,9 +755,7 @@ def visualize_analysis_with_layers_no_labels(subgraph_data, analysis_results, ta
                 label=label,
                 size=size,
                 color=color,
-                title=f"Node {node}",
-                #x=reference_net.nodes[node]['x'],
-                #y=reference_net.nodes[node]['y']
+                title=f"Node {node}"
             )
 
         # Add edges with weights

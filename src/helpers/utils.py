@@ -131,11 +131,120 @@ def softmax_normalize(values):
     """
     Normalize values using softmax to create a probability distribution.
     
-    :param values: Array of numeric values
-    :return: Normalized values summing to 1
+    Args:
+        values (np.ndarray): Array of numeric values.
+    Returns:
+        np.ndarray: Normalized values summing to 1.
     """
-    exp_values = np.exp(values)
+    exp_values = np.exp(values - np.max(values))  # Subtract max for numerical stability
     return exp_values / np.sum(exp_values)
+
+
+def analyze_attention_weights_but_edges(result):
+    """
+    Analyze attention weights using softmax normalization.
+
+    Args:
+        result (dict): Dictionary containing attention weights and edge index.
+    
+    Returns:
+        dict: Structured analysis results with normalized edge weights and node contributions.
+    """
+    # Extract attention weights and edge index
+    attention_weights = result.get('attention_weights', [])
+    edge_index = np.array(result.get('edge_index', []))
+
+    if not attention_weights or edge_index.size == 0:
+        raise ValueError("Invalid result: Missing attention weights or edge index.")
+    
+    num_nodes = np.max(edge_index) + 1  # Determine the total number of nodes
+    total_sum = np.zeros(len(edge_index[0]))  # Initialize total weights for edges
+
+    # Prepare results structure
+    analysis_results = {
+        'layers': [],
+        'overall': {
+            'top_edges': [],
+            'top_nodes': []
+        }
+    }
+
+    for layer_num, layer_weights in enumerate(attention_weights, start=1):
+        # Sum weights across attention heads
+        layer_weights = np.array(layer_weights)
+        layer_sum = layer_weights.sum(axis=1)
+
+        # Update total edge weights
+        total_sum += layer_sum
+
+        # Compute node contributions
+        node_contributions = np.zeros(num_nodes)
+        for (src, dest), weight in zip(edge_index.T, layer_sum):
+            node_contributions[src] += weight
+            node_contributions[dest] += weight
+
+        # Normalize edge and node contributions using softmax
+        normalized_layer_sum = softmax_normalize(layer_sum)
+        normalized_node_contributions = softmax_normalize(node_contributions)
+
+        # Identify top edges and nodes for this layer
+        top_edges = [
+            {
+                'index': idx,
+                'source': edge_index[0][idx],
+                'target': edge_index[1][idx],
+                'normalized_weight': normalized_layer_sum[idx]
+            }
+            for idx in layer_sum.argsort()[::-1][:5]
+        ]
+        top_nodes = [
+            {
+                'index': node,
+                'normalized_contribution': normalized_node_contributions[node]
+            }
+            for node in node_contributions.argsort()[::-1][:5]
+        ]
+
+        # Store results for the current layer
+        analysis_results['layers'].append({
+            'layer_number': layer_num,
+            'top_edges': top_edges,
+            'top_nodes': top_nodes
+        })
+
+    # Calculate overall normalized contributions
+    normalized_total_sum = softmax_normalize(total_sum)
+    overall_node_contributions = np.zeros(num_nodes)
+    for (src, dest), weight in zip(edge_index.T, total_sum):
+        overall_node_contributions[src] += weight
+        overall_node_contributions[dest] += weight
+    normalized_overall_node_contributions = softmax_normalize(overall_node_contributions)
+
+    # Identify top overall edges and nodes
+    top_overall_edges = [
+        {
+            'index': idx,
+            'source': edge_index[0][idx],
+            'target': edge_index[1][idx],
+            'normalized_weight': normalized_total_sum[idx]
+        }
+        for idx in total_sum.argsort()[::-1][:5]
+    ]
+    top_overall_nodes = [
+        {
+            'index': node,
+            'normalized_contribution': normalized_overall_node_contributions[node]
+        }
+        for node in overall_node_contributions.argsort()[::-1][:5]
+    ]
+
+    # Store overall results
+    analysis_results['overall'] = {
+        'top_edges': top_overall_edges,
+        'top_nodes': top_overall_nodes
+    }
+
+    return analysis_results
 
 
 def analyze_attention_weights(result):
@@ -362,7 +471,7 @@ def extract_subgraph(node_idx, num_hops, node_features, edges, labels, take_all=
     # Retrieve the new index of the target node in the subgraph
     target_node_subgraph_idx = mapping[0].item()
 
-    print(f"Subset nodes in subgraph: {subset_nodes}")
+    #print(f"Subset nodes in subgraph: {subset_nodes}")
     print(f"Target node original index: {node_idx}")
     print(f"Target node index in subgraph: {target_node_subgraph_idx}")
 

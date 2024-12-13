@@ -3,11 +3,9 @@ from src.helpers.utils import *
 from src.helpers.visualizing import *
 from src.helpers.datasets import *
 
-# URL of your local FastAPI endpoint
-URL = "http://localhost:8000/predict_coGNN/"
 
 
-def test_predict_endpoint(target_node, num_hops=3):
+def test_predict_endpoint(target_node, num_hops, url, save):
     # Create a larger graph
     #node_features, edges = create_large_graph()
 
@@ -39,7 +37,7 @@ def test_predict_endpoint(target_node, num_hops=3):
 
     #try:
     print("Sending Subgraph to Prediction Endpoint...")
-    response = requests.post(URL, json=input_data_dict)
+    response = requests.post(url, json=input_data_dict)
 
     # Check response status
     response.raise_for_status()
@@ -56,23 +54,30 @@ def test_predict_endpoint(target_node, num_hops=3):
 
     probs_predicted = result['class_probabilities'][target_node_idx]
 
-    net = visualize_subgraph_with_layers_weightened(result['edge_index'], result['edge_weights'], input_data_dict['labels'], target_node_idx, np.argmax(result['class_probabilities'][target_node_idx]), target_label, save=True)
+    net = visualize_subgraph_with_consistent_layout(result['edge_index'], result['edge_weights'], input_data_dict['labels'], target_node_idx, np.argmax(result['class_probabilities'][target_node_idx]), target_label, save=save)
 
     return result, target_node_idx
-
 
     #except requests.exceptions.RequestException as e:
     #    print(f"Error connecting to the endpoint: {e}")
     #except Exception as e:
     #    print(f"An error occurred: {e}")
 
-
-
 # Run the test
 if __name__ == "__main__":
 
-    target_node = 666  # Take 1000 as a good example
-    result, target_node_idx = test_predict_endpoint(target_node)
+    # URL of your local FastAPI endpoint
+    URL_cora_3l = "http://localhost:8000/coGNN_predict_3layer_cora/"
+
+    URL_cora_5l = "http://localhost:8000/coGNN_predict_5layer_cora/"
+
+    URL_re_3l = "http://localhost:8000/coGNN_predict_3layer_re/"
+
+    URL_re_5l = "http://localhost:8000/coGNN_predict_5layer_re/"
+
+
+    target_node = 21  # Take 1000 as a good example NODE 5, 10 almost complete isolation but not working well. Node 21 for information flow explanation
+    result, target_node_idx = test_predict_endpoint(target_node, num_hops=3, url=URL_cora_3l, save=True)
     target_class_probabilities = result['class_probabilities'][target_node_idx]
     predicted_class = target_class_probabilities.index(max(target_class_probabilities))
     print(f"Predicted class for target node: {predicted_class}")

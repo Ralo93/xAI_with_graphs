@@ -4,7 +4,8 @@ from src.helpers.visualizing import *
 from src.helpers.datasets import *
 
 # URL of your local FastAPI endpoint
-URL = "http://localhost:8000/predict/"
+URL = "http://localhost:8000/gat_predict_cora/"
+
 
 #CLOUD_URL = "https://cora-gat-image-196616273613.europe-west10.run.app/predict/"
 
@@ -32,42 +33,38 @@ def test_predict_endpoint(target_node, num_hops=3):
     print(input_data_dict_subgraph.keys())  # To see what keys the dictionary contains
 
         # Extract the subgraph for the target node
-    input_data_dict_all = extract_subgraph(
-        node_idx=target_node, num_hops=num_hops, node_features=node_features, edges=edges, labels=labels, take_all=True
-    )
-    print(type(input_data_dict_all))  # To confirm it's a dictionary
-    print(input_data_dict_all.keys())  # To see what keys the dictionary contains
+    #input_data_dict_all = extract_subgraph(
+    #    node_idx=target_node, num_hops=num_hops, node_features=node_features, edges=edges, labels=labels, take_all=True
+    #)
+    #print(type(input_data_dict_all))  # To confirm it's a dictionary
+    #print(input_data_dict_all.keys())  # To see what keys the dictionary contains
 
 #    net = visualize_subgraph_pyvis(input_data_dict, save=True)
 
     # The subgraph extraction function now also has the target node we want to run prediction for
     target_node_idx_subgraph = input_data_dict_subgraph['target_node_idx']
-    target_node_idx_all = input_data_dict_all['target_node_idx']
+    #target_node_idx_all = input_data_dict_all['target_node_idx']
 
     #assert target_node_idx == target_node_idx_all
 
     # get it out again because the request does not expect it
     del input_data_dict_subgraph['target_node_idx']
-    del input_data_dict_all['target_node_idx']
+    #del input_data_dict_all['target_node_idx']
 
     #try:
     print("Sending Subgraph to Prediction Endpoint...")
     response = requests.post(URL, json=input_data_dict_subgraph)
 
-    #try:
-    print("Sending Subgraph to Prediction Endpoint...")
-    response_all = requests.post(URL, json=input_data_dict_all)
-
     # Check response status
     response.raise_for_status()
         # Check response status
-    response_all.raise_for_status()
+    #response_all.raise_for_status()
 
     # Parse the response
     result_subgraph = response.json()
         # Parse the response
 
-    result_all = response_all.json()
+    #result_all = response_all.json()
     
     print("Prediction Response Received.")
 
@@ -82,29 +79,30 @@ def test_predict_endpoint(target_node, num_hops=3):
     print("Shape of the data for SUB:", array_data_sub.shape)
 
     # Extract and process attention weights
-    aw_all = result_all.get('attention_weights', [])
-    #print(f"Result all: {aw_all}")
+    #aw_all = result_all.get('attention_weights', [])
+   # #print(f"Result all: {aw_all}")
         # Convert to NumPy array for shape inspection
-    array_data_all = np.array(aw_all)
+    #array_data_all = np.array(aw_all)
 
     # Get the shape
-    print("Shape of the data for ALL:", array_data_all.shape)
+    #print("Shape of the data for ALL:", array_data_all.shape)
 
     # Flatten both arrays to compare element-wise
     array_data_flat = array_data_sub.flatten()
-    another_array_flat = array_data_all.flatten()
+    #another_array_flat = array_data_all.flatten()
 
     # Check if all elements in `array_data` are in `another_array`
-    is_subset = np.all(np.isin(array_data_flat, another_array_flat))
+    #is_subset = np.all(np.isin(array_data_flat, another_array_flat))
 
-    print("Is array_data a subset of another_array?", is_subset)
+    #print("Is array_data a subset of another_array?", is_subset)
 
     print(f"Class Probabilities for Target Node SUB: {result_subgraph['class_probabilities'][target_node_idx_subgraph]}")
-    print(f"Class Probabilities for Target Node ALL: {result_all['class_probabilities'][target_node_idx_all]}")
+    #print(f"Class Probabilities for Target Node ALL: {result_all['class_probabilities'][target_node_idx_all]}")
 
     probs_predicted_sub = result_subgraph['class_probabilities'][target_node_idx_subgraph]
     #probs_predicted_all = result_all['class_probabilities'][target_node_idx_all]
     
+    #normalized_analysis_subgraph = analyze_attention_weights(result_subgraph)
     normalized_analysis_subgraph = analyze_attention_weights(result_subgraph)
 
     #print(normalized_analysis_subgraph)
@@ -125,7 +123,7 @@ def test_predict_endpoint(target_node, num_hops=3):
 # Run the test
 if __name__ == "__main__":
 
-    target_node = 1002  # Take 1000 as a good example
+    target_node = 1000  # Take 1000 as a good example
     result, target_node_idx = test_predict_endpoint(target_node)
     target_class_probabilities = result['class_probabilities'][target_node_idx]
     predicted_class = target_class_probabilities.index(max(target_class_probabilities))

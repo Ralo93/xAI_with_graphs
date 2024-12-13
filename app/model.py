@@ -261,32 +261,31 @@ class GAT(torch.nn.Module):
             dropout=dropout,
             add_self_loops=False
         )
-
     def forward(self, x, edge_index):
         # Save input for skip connection
         x_skip = x
 
         # GAT layer 1
         x, alpha1 = self.gat1(x, edge_index, return_attention_weights=True)
-        #print(f"Alpha1 shape: {alpha1[1].shape}")  # Should be [num_edges, 5]
         x = F.elu(x)
         x = self.norm1(x)
         x = self.dropout(x)
 
         # GAT layer 2
-        x_skip = self.proj_skip(x_skip)  # Align dimensions for skip connection
-        x = x + x_skip  # Add skip connection
         x, alpha2 = self.gat2(x, edge_index, return_attention_weights=True)
-        #print(f"Alpha2 shape: {alpha2[1].shape}")  # Should be [num_edges, 5]
         x = F.elu(x)
         x = self.norm2(x)
         x = self.dropout(x)
 
         # GAT layer 3
         x, alpha3 = self.gat3(x, edge_index, return_attention_weights=True)
-        #print(f"Alpha3 shape: {alpha3[1].shape}")  # Should be [num_edges, 5]
+
+        # Skip connection to output
+        x_skip = self.proj_skip(x_skip)  # Align dimensions for skip connection if needed
+        x = x + x_skip  # Add skip connection to final output
 
         return x, [alpha1, alpha2, alpha3]
+
     
 
 def get_raw_model(in_channels: int, hidden_channels: int, out_channels: int, 
@@ -304,7 +303,7 @@ def get_raw_model(in_channels: int, hidden_channels: int, out_channels: int,
         edge_dim=edge_dim
     )
 
-def load_model(
+def load_model_3layerGat(
     in_channels: int, 
     hidden_channels: int, 
     out_channels: int,
@@ -357,8 +356,6 @@ def load_model(
     return model
 
 
-
-
 def get_raw_cognn_model(
     gumbel_args, 
     env_args, 
@@ -382,9 +379,9 @@ def get_raw_cognn_model(
         action_args=action_args
     )
 
-def load_cognn_model(
+def load_cognn_model_cora_3layer(
     config,
-    model_path: str = 'cognn_model.pth',
+    model_path: str = 'app/cognn_model_cora_3layer.pth',
 ) -> CoGNN:
     """
     Load the CoGNN model with its trained weights
@@ -425,7 +422,198 @@ def load_cognn_model(
                 # Load the checkpoint
 
         # for my checkpoints:
-        checkpoint = torch.load(f'cognn_model.pth')
+        checkpoint = torch.load(model_path)
+        #checkpoint = torch.load(f'best_model_fold_{num_fold}.pth')
+
+        # Extract the model state_dict
+        model.load_state_dict(checkpoint['model_state_dict'])
+
+        #model.to(device)
+        
+        # Optional: print out additional information from the checkpoint
+        print(f"Loaded coGNN model")
+    except Exception as e:
+        print(f"Error loading model weights: {e}")
+        raise
+    
+    # Set model to evaluation mode
+    model.eval()
+    
+    return model
+
+
+def load_cognn_model_cora_5layer(
+    config,
+    model_path: str = 'app/cognn_model_cora_5layer.pth',
+) -> CoGNN:
+    """
+    Load the CoGNN model with its trained weights
+    
+    Args:
+        model_path (str): Path to the saved model checkpoint
+        gumbel_args: Gumbel softmax configuration
+        env_args: Environment network configuration
+        action_args: Action network configuration
+    
+    Returns:
+        CoGNN: Loaded model with trained weights
+    """
+    gumbel_args=config.Gumbel, 
+    env_args=config.Environment, 
+    action_args=config.Action
+
+    for con in gumbel_args:
+        print(con)
+    
+    # Create raw model with specified architecture
+    model = get_raw_cognn_model(
+        gumbel_args=gumbel_args, 
+        env_args=env_args, 
+        action_args=action_args
+    )
+
+    print("Model state dictionary keys:")
+    for key in model.state_dict().keys():
+        print(key)
+    
+    # Load the model checkpoint
+    try:
+        #checkpoint = torch.load(model_path, map_location='cpu')
+        
+        # Load the model state dictionary
+        #model.load_state_dict(checkpoint['model_state_dict']) #TODO change back 
+                # Load the checkpoint
+
+        # for my checkpoints:
+        checkpoint = torch.load(model_path)
+        #checkpoint = torch.load(f'best_model_fold_{num_fold}.pth')
+
+        # Extract the model state_dict
+        model.load_state_dict(checkpoint['model_state_dict'])
+
+        #model.to(device)
+        
+        # Optional: print out additional information from the checkpoint
+        print(f"Loaded coGNN model")
+    except Exception as e:
+        print(f"Error loading model weights: {e}")
+        raise
+    
+    # Set model to evaluation mode
+    model.eval()
+    
+    return model
+
+
+def load_cognn_model_re_3layer(
+    config,
+    model_path: str = 'app/cognn_model_re_3layer.pth',
+) -> CoGNN:
+    """
+    Load the CoGNN model with its trained weights
+    
+    Args:
+        model_path (str): Path to the saved model checkpoint
+        gumbel_args: Gumbel softmax configuration
+        env_args: Environment network configuration
+        action_args: Action network configuration
+    
+    Returns:
+        CoGNN: Loaded model with trained weights
+    """
+    gumbel_args=config.Gumbel, 
+    env_args=config.Environment, 
+    action_args=config.Action
+
+    for con in gumbel_args:
+        print(con)
+    
+    # Create raw model with specified architecture
+    model = get_raw_cognn_model(
+        gumbel_args=gumbel_args, 
+        env_args=env_args, 
+        action_args=action_args
+    )
+
+    print("Model state dictionary keys:")
+    for key in model.state_dict().keys():
+        print(key)
+    
+    # Load the model checkpoint
+    try:
+        #checkpoint = torch.load(model_path, map_location='cpu')
+        
+        # Load the model state dictionary
+        #model.load_state_dict(checkpoint['model_state_dict']) #TODO change back 
+                # Load the checkpoint
+
+        # for my checkpoints:
+        checkpoint = torch.load(model_path)
+        #checkpoint = torch.load(f'best_model_fold_{num_fold}.pth')
+
+        # Extract the model state_dict
+        model.load_state_dict(checkpoint['model_state_dict'])
+
+        #model.to(device)
+        
+        # Optional: print out additional information from the checkpoint
+        print(f"Loaded coGNN model")
+    except Exception as e:
+        print(f"Error loading model weights: {e}")
+        raise
+    
+    # Set model to evaluation mode
+    model.eval()
+    
+    return model
+
+
+def load_cognn_model_re_5layer(
+    config,
+    model_path: str = 'app/cognn_model_re_5layer.pth',
+) -> CoGNN:
+    """
+    Load the CoGNN model with its trained weights
+    
+    Args:
+        model_path (str): Path to the saved model checkpoint
+        gumbel_args: Gumbel softmax configuration
+        env_args: Environment network configuration
+        action_args: Action network configuration
+    
+    Returns:
+        CoGNN: Loaded model with trained weights
+    """
+    gumbel_args=config.Gumbel, 
+    env_args=config.Environment, 
+    action_args=config.Action
+
+    print(env_args)
+
+    for con in gumbel_args:
+        print(con)
+    
+    # Create raw model with specified architecture
+    model = get_raw_cognn_model(
+        gumbel_args=gumbel_args, 
+        env_args=env_args, 
+        action_args=action_args
+    )
+
+    print("Model state dictionary keys:")
+    for key in model.state_dict().keys():
+        print(key)
+    
+    # Load the model checkpoint
+    try:
+        #checkpoint = torch.load(model_path, map_location='cpu')
+        
+        # Load the model state dictionary
+        #model.load_state_dict(checkpoint['model_state_dict']) #TODO change back 
+                # Load the checkpoint
+
+        # for my checkpoints:
+        checkpoint = torch.load(model_path)
         #checkpoint = torch.load(f'best_model_fold_{num_fold}.pth')
 
         # Extract the model state_dict
