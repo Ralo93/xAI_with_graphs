@@ -3,7 +3,7 @@ from torch_geometric.utils import k_hop_subgraph
 import numpy as np
 from torch_geometric.utils import add_self_loops
 
-from collections import defaultdict
+from collections import defaultdict, deque
 import numpy as np
 from scipy.special import softmax
 
@@ -489,4 +489,163 @@ def extract_subgraph(node_idx, num_hops, node_features, edges, labels, take_all=
     }
 
 
+def analyze_attention_weights_correct(result, target_node):
+    """
+    Analyze attention weights using softmax normalization with hop-based filtering for layers.
+    
+    :param result: Dictionary containing attention weights and edge index.
+    :param target_node: Index of the target node for hop-based filtering.
+    :return: Structured analysis results with layer-specific and overall top contributions.
+    """
+    def compute_hop_distances(edge_index, target):
+        """
+        Compute hop distances for all nodes in the graph from the target node.
+        """
+        hop_distances = {}
+        graph = defaultdict(list)
+        for source, target_edge in edge_index.T:
+            graph[source].append(target_edge)
+            graph[target_edge].append(source)
+
+        queue = deque([(target, 0)])
+        visited = set()
+
+        while queue:
+            node, distance = queue.popleft()
+            if node in visited:
+                continue
+            visited.add(node)
+            hop_distances[node] = distance
+            for neighbor in graph[node]:
+                if neighbor not in visited:
+                    queue.append((neighbor, distance + 1))
+
+        return hop_distances
+
+    def softmax_normalize(values):
+        """
+        Normalize values using the softmax function.
+        """
+        exp_values = np.exp(values - np.max(values))
+        return exp_values / exp_values.sum()
+
+    # Extract attention weights and edge index
+    attention_weights = result.get('attention_weights', [])
+    edge_index = np.array(result['edge_index'])
+    num_nodes = np.max(edge_index) + 1
+
+    if not attention_weights:
+        raise ValueError("No attention weights returned from the server.")
+
+    # Compute hop distances
+    hop_distances = compute_hop_distances(edge_index, target_node)
+
+    # Prepare results structure
+    analysis_results = {
+        'layers': [],
+        'overall': {
+            'top_edges': [],
+            'top_nodes': []
+        }
+    }
+
+    # Total sum across all layers
+    total_sum = np.zeros(len(edge_index[0]))
+
+    # Per-layer analysis with hop-based filtering
+    max_hops = {1: 1, 2: 2, 3: 3}  # Maximum hops to consider per layer
+    for layer_num, layer_weights in enumerate(attention_weights, 1):
+        max_hop = max_hops[layer_num]
+        
+        # Sum attention weights across heads
+        layer_weights = np.array(layer_weights)
+        layer_sum = layer_weights.sum(axis=1)
+        total_sum += layer_sum
+
+        # Filter edges and nodes by hop distance
+        filtered_edges = [
+            (src, dest, weight)
+            for (src, dest), weight in zip(edge_index.T, layer_sum)
+            if hop_distances.get(src, float('inf')) <= max_hop and hop_distances.get(dest, float('inf')) <= max_hop
+        ]
+
+        # Calculate node contributions within the current layer
+        node_contributions = np.zeros(num_nodes)
+        for src, dest, weight in filtered_edges:
+            node_contributions[src] += weight
+            node_contributions[dest] += weight
+
+        # Normalize using softmax
+        normalized_layer_sum = softmax_normalize(np.array([w for _, _, w in filtered_edges]))
+        normalized_node_contributions = softmax_normalize(node_contributions)
+
+        # Top edges for this layer
+        top_edges = sorted(filtered_edges, key=lambda x: x[2], reverse=True)[:5]
+        top_edges = [
+            {
+                'index': idx,
+                'source': src,
+                'target': dest,
+                'normalized_weight': norm_weight
+            }
+            for idx, ((src, dest, _), norm_weight) in enumerate(zip(top_edges, normalized_layer_sum))
+        ]
+
+        # Top nodes for this layer
+        top_node_indices = node_contributions.argsort()[::-1][:5]
+        top_nodes = [
+            {
+                'index': node,
+                'normalized_contribution': normalized_node_contributions[node]
+            }
+            for node in top_node_indices
+        ]
+
+        # Store layer results
+        analysis_results['layers'].append({
+            'layer_number': layer_num,
+            'top_edges': top_edges,
+            'top_nodes': top_nodes
+        })
+
+    # Overall analysis
+    normalized_total_sum = softmax_normalize(total_sum)
+
+    # Calculate overall node contributions
+    overall_node_contributions = np.zeros(num_nodes)
+    for (src, dest), weight in zip(edge_index.T, total_sum):
+        overall_node_contributions[src] += weight
+        overall_node_contributions[dest] += weight
+
+    normalized_overall_node_contributions = softmax_normalize(overall_node_contributions)
+
+    # Top overall edges
+    top_overall_edge_indices = total_sum.argsort()[::-1][:5]
+    top_overall_edges = [
+        {
+            'index': idx,
+            'source': edge_index[0][idx],
+            'target': edge_index[1][idx],
+            'normalized_weight': normalized_total_sum[idx]
+        }
+        for idx in top_overall_edge_indices
+    ]
+
+    # Top overall nodes
+    top_overall_node_indices = overall_node_contributions.argsort()[::-1][:5]
+    top_overall_nodes = [
+        {
+            'index': node,
+            'normalized_contribution': normalized_overall_node_contributions[node]
+        }
+        for node in top_overall_node_indices
+    ]
+
+    # Store overall results
+    analysis_results['overall'] = {
+        'top_edges': top_overall_edges,
+        'top_nodes': top_overall_nodes
+    }
+
+    return analysis_results
 

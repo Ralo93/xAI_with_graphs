@@ -1,0 +1,127 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 800px;
+                 background-color: #222222;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#2ca02c", "font": {"color": "white"}, "id": 0, "label": "2", "shape": "dot", "size": 10, "title": "Node with class 2", "x": 500.0, "y": 0.0}, {"color": "#d62728", "font": {"color": "white"}, "id": 1, "label": "3", "shape": "dot", "size": 10, "title": "Node with class 3", "x": 495.89500691162306, "y": 63.938580842252996}, {"color": "#a52a2a", "font": {"color": "white"}, "id": 2, "label": "10", "shape": "dot", "size": 10, "title": "Node with class 10", "x": 483.6474315195147, "y": 126.82729195475368}, {"color": "#ff7f0e", "font": {"color": "white"}, "id": 3, "label": "1", "shape": "dot", "size": 10, "title": "Node with class 1", "x": 463.4583786730109, "y": 187.63350243968705}, {"color": "#2ca02c", "font": {"color": "white"}, "id": 4, "label": "2", "shape": "dot", "size": 10, "title": "Node with class 2", "x": 435.6593520616947, "y": 245.35877600196892}, {"color": "#d62728", "font": {"color": "white"}, "id": 5, "label": "3", "shape": "dot", "size": 10, "title": "Node with class 3", "x": 400.7068109339783, "y": 299.055265245608}, {"color": "#ff7f0e", "font": {"color": "white"}, "id": 6, "label": "1", "shape": "dot", "size": 10, "title": "Node with class 1", "x": 359.17467504886383, "y": 347.84127530174317}, {"color": "#2ca02c", "font": {"color": "white"}, "id": 7, "label": "2", "shape": "dot", "size": 10, "title": "Node with class 2", "x": 311.7449009293668, "y": 390.9157412340149}, {"color": "#2ca02c", "font": {"color": "white"}, "id": 8, "label": "2", "shape": "dot", "size": 10, "title": "Node with class 2", "x": 259.19628415526256, "y": 427.57138150267303}, {"color": "#d62728", "font": {"color": "white"}, "id": 9, "label": "3", "shape": "dot", "size": 10, "title": "Node with class 3", "x": 202.3916715611969, "y": 457.20631150790626}, {"color": "#9467bd", "font": {"color": "white"}, "id": 10, "label": "4", "shape": "dot", "size": 10, "title": "Node with class 4", "x": 142.2637933155162, "y": 479.3339265183303}, {"color": "#ff7f0e", "font": {"color": "white"}, "id": 11, "label": "1", "shape": "dot", "size": 10, "title": "Node with class 1", "x": 79.79994751668977, "y": 493.590891707225}, {"color": "#2ca02c", "font": {"color": "white"}, "id": 12, "label": "2", "shape": "dot", "size": 10, "title": "Node with class 2", "x": 16.025788785827665, "y": 499.74310810034393}, {"color": "#d62728", "font": {"color": "white"}, "id": 13, "label": "3", "shape": "dot", "size": 10, "title": "Node with class 3", "x": -48.01151295384088, "y": 497.6895564745991}, {"color": "#a52a2a", "font": {"color": "white"}, "id": 14, "label": "10", "shape": "dot", "size": 10, "title": "Node with class 10", "x": -111.26046697815717, "y": 487.46395609091184}, {"color": "#a52a2a", "font": {"color": "white"}, "id": 15, "label": "10", "shape": "dot", "size": 10, "title": "Node with class 10", "x": -172.68252721065375, "y": 469.2342110248802}, {"color": "#ff7f0e", "font": {"color": "white"}, "id": 16, "label": "1", "shape": "dot", "size": 10, "title": "Node with class 1", "x": -231.26914512041753, "y": 443.29965318650005}, {"color": "#e377c2", "font": {"color": "white"}, "id": 17, "label": "6", "shape": "dot", "size": 10, "title": "Node with class 6", "x": -286.05833006108486, "y": 410.0861272984779}, {"color": "#1f77b4", "font": {"color": "white"}, "id": 18, "label": "0", "shape": "dot", "size": 10, "title": "Node with class 0", "x": -336.1504451306584, "y": 370.13899853765776}, {"color": "#d62728", "font": {"color": "white"}, "id": 19, "label": "3", "shape": "dot", "size": 10, "title": "Node with class 3", "x": -380.7229791845671, "y": 324.1141976538944}, {"color": "#9467bd", "font": {"color": "white"}, "id": 20, "label": "4", "shape": "dot", "size": 10, "title": "Node with class 4", "x": -419.04405244592033, "y": 272.76745060527435}, {"color": "#a52a2a", "font": {"color": "white"}, "id": 21, "label": "10", "shape": "dot", "size": 10, "title": "Node with class 10", "x": -450.4844339512095, "y": 216.9418695587791}, {"color": "#bcbd22", "font": {"color": "white"}, "id": 22, "label": "8", "shape": "dot", "size": 10, "title": "Node with class 8", "x": -474.52787350533424, "y": 157.55410901181062}, {"color": "#e377c2", "font": {"color": "white"}, "id": 23, "label": "6", "shape": "dot", "size": 10, "title": "Node with class 6", "x": -490.7795784955327, "y": 95.57931435068627}, {"color": "#dda0dd", "font": {"color": "white"}, "id": 24, "label": "16", "shape": "dot", "size": 10, "title": "Node with class 16", "x": -498.97269637516814, "y": 32.03510999035662}, {"color": "#2ca02c", "font": {"color": "white"}, "id": 25, "label": "2", "shape": "dot", "size": 10, "title": "Node with class 2", "x": -498.97269637516814, "y": -32.035109990356496}, {"color": "#d62728", "font": {"color": "white"}, "id": 26, "label": "3", "shape": "dot", "size": 10, "title": "Node with class 3", "x": -490.7795784955327, "y": -95.57931435068615}, {"color": "#9467bd", "font": {"color": "white"}, "id": 27, "label": "4", "shape": "dot", "size": 10, "title": "Node with class 4", "x": -474.5278735053343, "y": -157.5541090118103}, {"color": "#ff7f0e", "font": {"color": "white"}, "id": 28, "label": "1", "shape": "dot", "size": 10, "title": "Node with class 1", "x": -450.48443395120955, "y": -216.94186955877902}, {"color": "#2ca02c", "font": {"color": "white"}, "id": 29, "label": "2", "shape": "dot", "size": 10, "title": "Node with class 2", "x": -419.04405244592033, "y": -272.76745060527423}, {"color": "#d62728", "font": {"color": "white"}, "id": 30, "label": "3", "shape": "dot", "size": 10, "title": "Node with class 3", "x": -380.72297918456735, "y": -324.1141976538941}, {"color": "#a52a2a", "font": {"color": "white"}, "id": 31, "label": "10", "shape": "dot", "size": 10, "title": "Node with class 10", "x": -336.1504451306585, "y": -370.13899853765764}, {"color": "#ff7f0e", "font": {"color": "white"}, "id": 32, "label": "1", "shape": "dot", "size": 10, "title": "Node with class 1", "x": -286.058330061085, "y": -410.08612729847783}, {"color": "#d62728", "font": {"color": "white"}, "id": 33, "label": "3", "shape": "dot", "size": 10, "title": "Node with class 3", "x": -231.26914512041765, "y": -443.2996531865}, {"color": "#a52a2a", "font": {"color": "white"}, "id": 34, "label": "10", "shape": "dot", "size": 10, "title": "Node with class 10", "x": -172.68252721065366, "y": -469.23421102488027}, {"color": "#e377c2", "font": {"color": "white"}, "id": 35, "label": "6", "shape": "dot", "size": 10, "title": "Node with class 6", "x": -111.2604669781573, "y": -487.46395609091184}, {"color": "#2ca02c", "font": {"color": "white"}, "id": 36, "label": "2", "shape": "dot", "size": 10, "title": "Node with class 2", "x": -48.011512953840786, "y": -497.6895564745991}, {"color": "#d62728", "font": {"color": "white"}, "id": 37, "label": "3", "shape": "dot", "size": 10, "title": "Node with class 3", "x": 16.02578878582743, "y": -499.74310810034393}, {"color": "#a52a2a", "font": {"color": "white"}, "id": 38, "label": "10", "shape": "dot", "size": 10, "title": "Node with class 10", "x": 79.7999475166892, "y": -493.5908917072251}, {"color": "#ff7f0e", "font": {"color": "white"}, "id": 39, "label": "1", "shape": "dot", "size": 10, "title": "Node with class 1", "x": 142.263793315516, "y": -479.3339265183304}, {"color": "#d62728", "font": {"color": "white"}, "id": 40, "label": "3", "shape": "dot", "size": 10, "title": "Node with class 3", "x": 202.39167156119686, "y": -457.20631150790626}, {"color": "#a52a2a", "font": {"color": "white"}, "id": 41, "label": "10", "shape": "dot", "size": 10, "title": "Node with class 10", "x": 259.1962841552622, "y": -427.5713815026732}, {"color": "#ff69b4", "font": {"color": "white"}, "id": 42, "label": "12", "shape": "dot", "size": 10, "title": "Node with class 12", "x": 311.7449009293667, "y": -390.91574123401494}, {"color": "#e377c2", "font": {"color": "white"}, "id": 43, "label": "6", "shape": "dot", "size": 10, "title": "Node with class 6", "x": 359.17467504886355, "y": -347.84127530174345}, {"color": "#5f9ea0", "font": {"color": "white"}, "id": 44, "label": "11", "shape": "dot", "size": 10, "title": "Node with class 11", "x": 400.706810933978, "y": -299.0552652456085}, {"color": "#dda0dd", "font": {"color": "white"}, "id": 45, "label": "16", "shape": "dot", "size": 10, "title": "Node with class 16", "x": 435.6593520616947, "y": -245.35877600196892}, {"color": "#9acd32", "font": {"color": "white"}, "id": 46, "label": "15", "shape": "dot", "size": 10, "title": "Node with class 15", "x": 463.4583786730108, "y": -187.6335024396873}, {"color": "#cd5c5c", "font": {"color": "white"}, "id": 47, "label": "17", "shape": "dot", "size": 10, "title": "Node with class 17", "x": 483.64743151951467, "y": -126.82729195475376}, {"color": "red", "font": {"color": "white"}, "id": 48, "label": "Target Node 48", "shape": "dot", "size": 40, "title": "Target Node (Predicted: 15, Original: 8)", "x": 495.895006911623, "y": -63.938580842253316}]);
+                  edges = new vis.DataSet([{"arrows": "to", "from": 1, "title": "Edge: 1 -\u003e 0 (Contributes)", "to": 0}, {"arrows": "to", "from": 1, "title": "Edge: 1 -\u003e 2 (Contributes)", "to": 2}, {"arrows": "to", "from": 1, "title": "Edge: 1 -\u003e 3 (Contributes)", "to": 3}, {"arrows": "to", "from": 2, "title": "Edge: 2 -\u003e 3 (Contributes)", "to": 3}, {"arrows": "to", "from": 3, "title": "Edge: 3 -\u003e 0 (Contributes)", "to": 0}, {"arrows": "to", "from": 3, "title": "Edge: 3 -\u003e 2 (Contributes)", "to": 2}, {"arrows": "to", "from": 3, "title": "Edge: 3 -\u003e 4 (Contributes)", "to": 4}, {"arrows": "to", "from": 4, "title": "Edge: 4 -\u003e 3 (Contributes)", "to": 3}, {"arrows": "to", "from": 4, "title": "Edge: 4 -\u003e 18 (Contributes)", "to": 18}, {"arrows": "to", "from": 7, "title": "Edge: 7 -\u003e 8 (Contributes)", "to": 8}, {"arrows": "to", "from": 7, "title": "Edge: 7 -\u003e 18 (Contributes)", "to": 18}, {"arrows": "to", "from": 9, "title": "Edge: 9 -\u003e 8 (Contributes)", "to": 8}, {"arrows": "to", "from": 9, "title": "Edge: 9 -\u003e 10 (Contributes)", "to": 10}, {"arrows": "to", "from": 9, "title": "Edge: 9 -\u003e 11 (Contributes)", "to": 11}, {"arrows": "to", "from": 10, "title": "Edge: 10 -\u003e 9 (Contributes)", "to": 9}, {"arrows": "to", "from": 10, "title": "Edge: 10 -\u003e 11 (Contributes)", "to": 11}, {"arrows": "to", "from": 12, "title": "Edge: 12 -\u003e 11 (Contributes)", "to": 11}, {"arrows": "to", "from": 12, "title": "Edge: 12 -\u003e 16 (Contributes)", "to": 16}, {"arrows": "to", "from": 13, "title": "Edge: 13 -\u003e 12 (Contributes)", "to": 12}, {"arrows": "to", "from": 13, "title": "Edge: 13 -\u003e 14 (Contributes)", "to": 14}, {"arrows": "to", "from": 14, "title": "Edge: 14 -\u003e 15 (Contributes)", "to": 15}, {"arrows": "to", "from": 14, "title": "Edge: 14 -\u003e 16 (Contributes)", "to": 16}, {"arrows": "to", "from": 15, "title": "Edge: 15 -\u003e 14 (Contributes)", "to": 14}, {"arrows": "to", "from": 15, "title": "Edge: 15 -\u003e 16 (Contributes)", "to": 16}, {"arrows": "to", "from": 16, "title": "Edge: 16 -\u003e 12 (Contributes)", "to": 12}, {"arrows": "to", "from": 16, "title": "Edge: 16 -\u003e 14 (Contributes)", "to": 14}, {"arrows": "to", "from": 16, "title": "Edge: 16 -\u003e 15 (Contributes)", "to": 15}, {"arrows": "to", "from": 16, "title": "Edge: 16 -\u003e 17 (Contributes)", "to": 17}, {"arrows": "to", "from": 16, "title": "Edge: 16 -\u003e 21 (Contributes)", "to": 21}, {"arrows": "to", "from": 18, "title": "Edge: 18 -\u003e 4 (Contributes)", "to": 4}, {"arrows": "to", "from": 18, "title": "Edge: 18 -\u003e 7 (Contributes)", "to": 7}, {"arrows": "to", "from": 18, "title": "Edge: 18 -\u003e 17 (Contributes)", "to": 17}, {"arrows": "to", "from": 18, "title": "Edge: 18 -\u003e 19 (Contributes)", "to": 19}, {"arrows": "to", "from": 18, "title": "Edge: 18 -\u003e 22 (Contributes)", "to": 22}, {"arrows": "to", "from": 19, "title": "Edge: 19 -\u003e 18 (Contributes)", "to": 18}, {"arrows": "to", "from": 21, "title": "Edge: 21 -\u003e 16 (Contributes)", "to": 16}, {"arrows": "to", "from": 21, "title": "Edge: 21 -\u003e 22 (Contributes)", "to": 22}, {"arrows": "to", "from": 23, "title": "Edge: 23 -\u003e 22 (Contributes)", "to": 22}, {"arrows": "to", "from": 26, "title": "Edge: 26 -\u003e 28 (Contributes)", "to": 28}, {"arrows": "to", "from": 27, "title": "Edge: 27 -\u003e 28 (Contributes)", "to": 28}, {"arrows": "to", "from": 29, "title": "Edge: 29 -\u003e 18 (Contributes)", "to": 18}, {"arrows": "to", "from": 29, "title": "Edge: 29 -\u003e 28 (Contributes)", "to": 28}, {"arrows": "to", "from": 30, "title": "Edge: 30 -\u003e 16 (Contributes)", "to": 16}, {"arrows": "to", "from": 30, "title": "Edge: 30 -\u003e 22 (Contributes)", "to": 22}, {"arrows": "to", "from": 30, "title": "Edge: 30 -\u003e 31 (Contributes)", "to": 31}, {"arrows": "to", "from": 32, "title": "Edge: 32 -\u003e 31 (Contributes)", "to": 31}, {"arrows": "to", "from": 34, "title": "Edge: 34 -\u003e 35 (Contributes)", "to": 35}, {"arrows": "to", "from": 35, "title": "Edge: 35 -\u003e 34 (Contributes)", "to": 34}, {"arrows": "to", "from": 35, "title": "Edge: 35 -\u003e 36 (Contributes)", "to": 36}, {"arrows": "to", "from": 35, "title": "Edge: 35 -\u003e 42 (Contributes)", "to": 42}, {"arrows": "to", "from": 36, "title": "Edge: 36 -\u003e 35 (Contributes)", "to": 35}, {"arrows": "to", "from": 36, "title": "Edge: 36 -\u003e 37 (Contributes)", "to": 37}, {"arrows": "to", "from": 36, "title": "Edge: 36 -\u003e 39 (Contributes)", "to": 39}, {"arrows": "to", "from": 37, "title": "Edge: 37 -\u003e 36 (Contributes)", "to": 36}, {"arrows": "to", "from": 37, "title": "Edge: 37 -\u003e 39 (Contributes)", "to": 39}, {"arrows": "to", "from": 38, "title": "Edge: 38 -\u003e 37 (Contributes)", "to": 37}, {"arrows": "to", "from": 38, "title": "Edge: 38 -\u003e 39 (Contributes)", "to": 39}, {"arrows": "to", "from": 39, "title": "Edge: 39 -\u003e 36 (Contributes)", "to": 36}, {"arrows": "to", "from": 39, "title": "Edge: 39 -\u003e 37 (Contributes)", "to": 37}, {"arrows": "to", "from": 39, "title": "Edge: 39 -\u003e 40 (Contributes)", "to": 40}, {"arrows": "to", "from": 40, "title": "Edge: 40 -\u003e 39 (Contributes)", "to": 39}, {"arrows": "to", "from": 40, "title": "Edge: 40 -\u003e 41 (Contributes)", "to": 41}, {"arrows": "to", "from": 40, "title": "Edge: 40 -\u003e 42 (Contributes)", "to": 42}, {"arrows": "to", "from": 41, "title": "Edge: 41 -\u003e 40 (Contributes)", "to": 40}, {"arrows": "to", "from": 41, "title": "Edge: 41 -\u003e 42 (Contributes)", "to": 42}, {"arrows": "to", "from": 42, "title": "Edge: 42 -\u003e 35 (Contributes)", "to": 35}, {"arrows": "to", "from": 42, "title": "Edge: 42 -\u003e 40 (Contributes)", "to": 40}, {"arrows": "to", "from": 42, "title": "Edge: 42 -\u003e 41 (Contributes)", "to": 41}, {"arrows": "to", "from": 42, "title": "Edge: 42 -\u003e 43 (Contributes)", "to": 43}, {"arrows": "to", "from": 42, "title": "Edge: 42 -\u003e 45 (Contributes)", "to": 45}, {"arrows": "to", "from": 43, "title": "Edge: 43 -\u003e 42 (Contributes)", "to": 42}, {"arrows": "to", "from": 43, "title": "Edge: 43 -\u003e 45 (Contributes)", "to": 45}, {"arrows": "to", "from": 44, "title": "Edge: 44 -\u003e 43 (Contributes)", "to": 43}, {"arrows": "to", "from": 44, "title": "Edge: 44 -\u003e 45 (Contributes)", "to": 45}, {"arrows": "to", "from": 45, "title": "Edge: 45 -\u003e 42 (Contributes)", "to": 42}, {"arrows": "to", "from": 45, "title": "Edge: 45 -\u003e 43 (Contributes)", "to": 43}, {"arrows": "to", "from": 45, "title": "Edge: 45 -\u003e 46 (Contributes)", "to": 46}, {"arrows": "to", "from": 45, "title": "Edge: 45 -\u003e 48 (Contributes)", "to": 48}, {"arrows": "to", "from": 46, "title": "Edge: 46 -\u003e 45 (Contributes)", "to": 45}, {"arrows": "to", "from": 46, "title": "Edge: 46 -\u003e 48 (Contributes)", "to": 48}, {"arrows": "to", "from": 47, "title": "Edge: 47 -\u003e 46 (Contributes)", "to": 46}, {"arrows": "to", "from": 47, "title": "Edge: 47 -\u003e 48 (Contributes)", "to": 48}, {"arrows": "to", "from": 48, "title": "Edge: 48 -\u003e 45 (Contributes)", "to": 45}, {"arrows": "to", "from": 48, "title": "Edge: 48 -\u003e 46 (Contributes)", "to": 46}, {"arrows": "to", "from": 2, "title": "Edge: 2 -\u003e 2 (Contributes)", "to": 2}, {"arrows": "to", "from": 3, "title": "Edge: 3 -\u003e 3 (Contributes)", "to": 3}, {"arrows": "to", "from": 4, "title": "Edge: 4 -\u003e 4 (Contributes)", "to": 4}, {"arrows": "to", "from": 5, "title": "Edge: 5 -\u003e 5 (Contributes)", "to": 5}, {"arrows": "to", "from": 7, "title": "Edge: 7 -\u003e 7 (Contributes)", "to": 7}, {"arrows": "to", "from": 9, "title": "Edge: 9 -\u003e 9 (Contributes)", "to": 9}, {"arrows": "to", "from": 10, "title": "Edge: 10 -\u003e 10 (Contributes)", "to": 10}, {"arrows": "to", "from": 12, "title": "Edge: 12 -\u003e 12 (Contributes)", "to": 12}, {"arrows": "to", "from": 14, "title": "Edge: 14 -\u003e 14 (Contributes)", "to": 14}, {"arrows": "to", "from": 15, "title": "Edge: 15 -\u003e 15 (Contributes)", "to": 15}, {"arrows": "to", "from": 16, "title": "Edge: 16 -\u003e 16 (Contributes)", "to": 16}, {"arrows": "to", "from": 18, "title": "Edge: 18 -\u003e 18 (Contributes)", "to": 18}, {"arrows": "to", "from": 19, "title": "Edge: 19 -\u003e 19 (Contributes)", "to": 19}, {"arrows": "to", "from": 21, "title": "Edge: 21 -\u003e 21 (Contributes)", "to": 21}, {"arrows": "to", "from": 23, "title": "Edge: 23 -\u003e 23 (Contributes)", "to": 23}, {"arrows": "to", "from": 34, "title": "Edge: 34 -\u003e 34 (Contributes)", "to": 34}, {"arrows": "to", "from": 35, "title": "Edge: 35 -\u003e 35 (Contributes)", "to": 35}, {"arrows": "to", "from": 36, "title": "Edge: 36 -\u003e 36 (Contributes)", "to": 36}, {"arrows": "to", "from": 37, "title": "Edge: 37 -\u003e 37 (Contributes)", "to": 37}, {"arrows": "to", "from": 39, "title": "Edge: 39 -\u003e 39 (Contributes)", "to": 39}, {"arrows": "to", "from": 40, "title": "Edge: 40 -\u003e 40 (Contributes)", "to": 40}, {"arrows": "to", "from": 41, "title": "Edge: 41 -\u003e 41 (Contributes)", "to": 41}, {"arrows": "to", "from": 42, "title": "Edge: 42 -\u003e 42 (Contributes)", "to": 42}, {"arrows": "to", "from": 43, "title": "Edge: 43 -\u003e 43 (Contributes)", "to": 43}, {"arrows": "to", "from": 45, "title": "Edge: 45 -\u003e 45 (Contributes)", "to": 45}, {"arrows": "to", "from": 46, "title": "Edge: 46 -\u003e 46 (Contributes)", "to": 46}, {"arrows": "to", "from": 48, "title": "Edge: 48 -\u003e 48 (Contributes)", "to": 48}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {"physics": {"enabled": false}};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

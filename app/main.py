@@ -83,6 +83,44 @@ class Config_5layer_re:
         BATCH_SIZE = 32
         DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+
+class Config_10layer_re:
+    """Centralized configuration for the CoGNN model"""
+    class Action:
+        # Action Network Configuration
+        ACTIVATION = F.relu # could be also F.relu but gelu has way better performance
+        DROPOUT = 0.5
+        HIDDEN_DIM = 16 # independent
+        NUM_LAYERS = 1
+        INPUT_DIM = 128 # needs to be the same as hidden dimension in environment network
+        OUTPUT_DIM = 2
+        AGG = 'mean'
+
+    class Environment:
+        # Environment Network Configuration
+        INPUT_DIM = 300
+        OUTPUT_DIM = 18
+        NUM_LAYERS = 10 
+        DROPOUT = 0.5
+        HIDDEN_DIM = 128
+        LAYER_NORM = False
+        SKIP_CONNECTION = True
+        AGG = 'sum'
+
+    class Gumbel:
+        # Gumbel Softmax Configuration
+        TEMPERATURE = 0.5
+        TAU = 0.01
+        LEARN_TEMPERATURE = True
+
+    class Training:
+        # Training Hyperparameters
+        LEARNING_RATE = 0.001
+        WEIGHT_DECAY = 0
+        EPOCHS = 200
+        BATCH_SIZE = 32
+        DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 class Config_5layer_cora:
     """Centralized configuration for the CoGNN model"""
     class Action:
@@ -177,6 +215,7 @@ config_5layer_cora = Config_5layer_cora()
 
 config_3layer_re = Config_3layer_re()
 config_5layer_re = Config_5layer_re()
+config_10layer_re = Config_10layer_re()
 
 # GAT MODEL for attention visualization
 model_gat_3layer_cora = load_model_3layerGat_main()
@@ -187,8 +226,9 @@ model_cognn_5layer_cora = load_cognn_model_cora_5layer(Config_5layer_cora)
 
 model_cognn_3layer_re = load_cognn_model_re_3layer(config_3layer_re)
 
-#model_cognn_5layer_re = load_cognn_model_re_5layer(config_5layer_re)
+model_cognn_5layer_re = load_cognn_model_re_5layer(config_5layer_re)
 
+model_cognn_10layer_re = load_cognn_model_re_10layer(config_10layer_re)
 #print(model_cognn)
 
 # Define the app
@@ -438,6 +478,56 @@ async def predict(input_data: GraphInputData):
         with torch.no_grad():
             # Get model prediction and attention weights
             output, edge_weights = model_cognn_5layer_re(x, edge_index)
+
+            # Compute class probabilities
+            probabilities = torch.softmax(output, dim=1)
+            probabilities = probabilities.cpu().numpy()
+
+            # Handle NaN or infinite values
+            probabilities = np.nan_to_num(probabilities, nan=0.0, posinf=1.0, neginf=0.0)
+
+            # Convert to a list of lists with Python floats
+            probabilities = [[float(p) for p in prob] for prob in probabilities]
+
+                # Final validation
+            for i, ew in enumerate(edge_weights):
+                assert torch.all(torch.logical_or(ew == 0, ew == 1)), f"MAIN APP Edge weights in layer {i} are not binary at the end"
+
+            # Convert edge weights to a serializable format
+            edge_weights = [
+                ew.cpu().tolist() if isinstance(ew, torch.Tensor) else []
+                for ew in edge_weights
+            ]
+
+            return {
+                "edge_index": edge_index.tolist(),
+                "model_output": output.tolist(),
+                "class_probabilities": probabilities,
+                "edge_weights": edge_weights,
+            }
+        
+    except Exception as e:
+        # Print full traceback for debugging
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+
+@app.post("/coGNN_predict_10layer_re/", response_model=PredictionResponse_coGNN)
+async def predict(input_data: GraphInputData):
+    try:
+        # Convert input to PyTorch tensors
+        x = torch.tensor(input_data.node_features, dtype=torch.float32)
+        edge_index = torch.tensor(input_data.edge_index, dtype=torch.long).t().contiguous()
+        
+        # Ensure model is in evaluation mode
+        model_cognn_10layer_re.eval()
+        
+        # Disable gradient computation for inference
+        with torch.no_grad():
+            # Get model prediction and attention weights
+            output, edge_weights = model_cognn_10layer_re(x, edge_index)
 
             # Compute class probabilities
             probabilities = torch.softmax(output, dim=1)

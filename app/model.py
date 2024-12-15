@@ -631,3 +631,69 @@ def load_cognn_model_re_5layer(
     model.eval()
     
     return model
+
+
+
+def load_cognn_model_re_10layer(
+    config,
+    model_path: str = 'app/cognn_model_re_10layer.pth',
+) -> CoGNN:
+    """
+    Load the CoGNN model with its trained weights
+    
+    Args:
+        model_path (str): Path to the saved model checkpoint
+        gumbel_args: Gumbel softmax configuration
+        env_args: Environment network configuration
+        action_args: Action network configuration
+    
+    Returns:
+        CoGNN: Loaded model with trained weights
+    """
+    gumbel_args=config.Gumbel,
+    env_args=config.Environment,
+    action_args=config.Action
+
+    print(env_args)
+
+    for con in gumbel_args:
+        print(con)
+    
+    # Create raw model with specified architecture
+    model = get_raw_cognn_model(
+        gumbel_args=gumbel_args, 
+        env_args=env_args, 
+        action_args=action_args
+    )
+
+    print("Model state dictionary keys:")
+    for key in model.state_dict().keys():
+        print(key)
+    
+    # Load the model checkpoint
+    try:
+        #checkpoint = torch.load(model_path, map_location='cpu')
+        
+        # Load the model state dictionary
+        #model.load_state_dict(checkpoint['model_state_dict']) #TODO change back 
+                # Load the checkpoint
+
+        # for my checkpoints:
+        checkpoint = torch.load(model_path)
+        #checkpoint = torch.load(f'best_model_fold_{num_fold}.pth')
+
+        # Extract the model state_dict
+        model.load_state_dict(checkpoint['model_state_dict'])
+
+        #model.to(device)
+        
+        # Optional: print out additional information from the checkpoint
+        print(f"Loaded coGNN model")
+    except Exception as e:
+        print(f"Error loading model weights: {e}")
+        raise
+    
+    # Set model to evaluation mode
+    model.eval()
+    
+    return model

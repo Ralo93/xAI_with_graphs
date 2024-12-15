@@ -1,0 +1,127 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 800px;
+                 background-color: #222222;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "orange", "font": {"color": "white"}, "id": 2176, "label": "Node 2176, Label: 3", "shape": "dot", "size": 10, "title": "Node 2176"}, {"color": "blue", "font": {"color": "white"}, "id": 1536, "label": "Node 1536, Label: 0", "shape": "dot", "size": 10, "title": "Node 1536"}, {"color": "orange", "font": {"color": "white"}, "id": 8, "label": "Node 8, Label: 3", "shape": "dot", "size": 10, "title": "Node 8"}, {"color": "orange", "font": {"color": "white"}, "id": 269, "label": "Node 269, Label: 3", "shape": "dot", "size": 10, "title": "Node 269"}, {"color": "orange", "font": {"color": "white"}, "id": 2063, "label": "Node 2063, Label: 3", "shape": "dot", "size": 10, "title": "Node 2063"}, {"color": "orange", "font": {"color": "white"}, "id": 2064, "label": "Node 2064, Label: 3", "shape": "dot", "size": 10, "title": "Node 2064"}, {"color": "orange", "font": {"color": "white"}, "id": 1810, "label": "Node 1810, Label: 3", "shape": "dot", "size": 10, "title": "Node 1810"}, {"color": "orange", "font": {"color": "white"}, "id": 2579, "label": "Node 2579, Label: 3", "shape": "dot", "size": 10, "title": "Node 2579"}, {"color": "blue", "font": {"color": "white"}, "id": 2580, "label": "Node 2580, Label: 0", "shape": "dot", "size": 10, "title": "Node 2580"}, {"color": "orange", "font": {"color": "white"}, "id": 1303, "label": "Node 1303, Label: 3", "shape": "dot", "size": 10, "title": "Node 1303"}, {"color": "orange", "font": {"color": "white"}, "id": 281, "label": "Node 281, Label: 3", "shape": "dot", "size": 10, "title": "Node 281"}, {"color": "orange", "font": {"color": "white"}, "id": 928, "label": "Node 928, Label: 3", "shape": "dot", "size": 10, "title": "Node 928"}, {"color": "orange", "font": {"color": "white"}, "id": 418, "label": "Node 418, Label: 3", "shape": "dot", "size": 10, "title": "Node 418"}, {"color": "orange", "font": {"color": "white"}, "id": 298, "label": "Node 298, Label: 3", "shape": "dot", "size": 10, "title": "Node 298"}, {"color": "orange", "font": {"color": "white"}, "id": 1325, "label": "Node 1325, Label: 3", "shape": "dot", "size": 10, "title": "Node 1325"}, {"color": "orange", "font": {"color": "white"}, "id": 1326, "label": "Node 1326, Label: 3", "shape": "dot", "size": 10, "title": "Node 1326"}, {"color": "purple", "font": {"color": "white"}, "id": 1589, "label": "Node 1589, Label: 2", "shape": "dot", "size": 10, "title": "Node 1589"}, {"color": "orange", "font": {"color": "white"}, "id": 2613, "label": "Node 2613, Label: 3", "shape": "dot", "size": 10, "title": "Node 2613"}, {"color": "blue", "font": {"color": "white"}, "id": 186, "label": "Node 186, Label: 0", "shape": "dot", "size": 10, "title": "Node 186"}, {"color": "orange", "font": {"color": "white"}, "id": 1086, "label": "Node 1086, Label: 3", "shape": "dot", "size": 10, "title": "Node 1086"}, {"color": "orange", "font": {"color": "white"}, "id": 321, "label": "Node 321, Label: 3", "shape": "dot", "size": 10, "title": "Node 321"}, {"color": "orange", "font": {"color": "white"}, "id": 1986, "label": "Node 1986, Label: 3", "shape": "dot", "size": 10, "title": "Node 1986"}, {"color": "orange", "font": {"color": "white"}, "id": 1347, "label": "Node 1347, Label: 3", "shape": "dot", "size": 10, "title": "Node 1347"}, {"color": "orange", "font": {"color": "white"}, "id": 2244, "label": "Node 2244, Label: 3", "shape": "dot", "size": 10, "title": "Node 2244"}, {"color": "orange", "font": {"color": "white"}, "id": 2243, "label": "Node 2243, Label: 3", "shape": "dot", "size": 10, "title": "Node 2243"}, {"color": "blue", "font": {"color": "white"}, "id": 2246, "label": "Node 2246, Label: 0", "shape": "dot", "size": 10, "title": "Node 2246"}, {"color": "orange", "font": {"color": "white"}, "id": 2247, "label": "Node 2247, Label: 3", "shape": "dot", "size": 10, "title": "Node 2247"}, {"color": "orange", "font": {"color": "white"}, "id": 1095, "label": "Node 1095, Label: 3", "shape": "dot", "size": 10, "title": "Node 1095"}, {"color": "orange", "font": {"color": "white"}, "id": 327, "label": "Node 327, Label: 3", "shape": "dot", "size": 10, "title": "Node 327"}, {"color": "orange", "font": {"color": "white"}, "id": 1225, "label": "Node 1225, Label: 3", "shape": "dot", "size": 10, "title": "Node 1225"}, {"color": "orange", "font": {"color": "white"}, "id": 1996, "label": "Node 1996, Label: 3", "shape": "dot", "size": 10, "title": "Node 1996"}, {"color": "orange", "font": {"color": "white"}, "id": 972, "label": "Node 972, Label: 3", "shape": "dot", "size": 10, "title": "Node 972"}, {"color": "purple", "font": {"color": "white"}, "id": 1358, "label": "Node 1358, Label: 2", "shape": "dot", "size": 10, "title": "Node 1358"}, {"color": "orange", "font": {"color": "white"}, "id": 1997, "label": "Node 1997, Label: 3", "shape": "dot", "size": 10, "title": "Node 1997"}, {"color": "orange", "font": {"color": "white"}, "id": 2509, "label": "Node 2509, Label: 3", "shape": "dot", "size": 10, "title": "Node 2509"}, {"color": "blue", "font": {"color": "white"}, "id": 1228, "label": "Node 1228, Label: 0", "shape": "dot", "size": 10, "title": "Node 1228"}, {"color": "orange", "font": {"color": "white"}, "id": 2006, "label": "Node 2006, Label: 3", "shape": "dot", "size": 10, "title": "Node 2006"}, {"color": "orange", "font": {"color": "white"}, "id": 218, "label": "Node 218, Label: 3", "shape": "dot", "size": 10, "title": "Node 218"}, {"color": "orange", "font": {"color": "white"}, "id": 1502, "label": "Node 1502, Label: 3", "shape": "dot", "size": 10, "title": "Node 1502"}, {"color": "orange", "font": {"color": "white"}, "id": 607, "label": "Node 607, Label: 3", "shape": "dot", "size": 10, "title": "Node 607"}, {"color": "purple", "font": {"color": "white"}, "id": 101, "label": "Node 101, Label: 2", "shape": "dot", "size": 10, "title": "Node 101"}, {"color": "orange", "font": {"color": "white"}, "id": 1382, "label": "Node 1382, Label: 3", "shape": "dot", "size": 10, "title": "Node 1382"}, {"color": "orange", "font": {"color": "white"}, "id": 230, "label": "Node 230, Label: 3", "shape": "dot", "size": 10, "title": "Node 230"}, {"color": "red", "font": {"color": "white"}, "id": 1000, "label": "Target Node (Predicted: 3, Original: 3)", "shape": "dot", "size": 20, "title": "Node 1000"}, {"color": "orange", "font": {"color": "white"}, "id": 746, "label": "Node 746, Label: 3", "shape": "dot", "size": 10, "title": "Node 746"}, {"color": "orange", "font": {"color": "white"}, "id": 2283, "label": "Node 2283, Label: 3", "shape": "dot", "size": 10, "title": "Node 2283"}, {"color": "orange", "font": {"color": "white"}, "id": 2543, "label": "Node 2543, Label: 3", "shape": "dot", "size": 10, "title": "Node 2543"}, {"color": "orange", "font": {"color": "white"}, "id": 2551, "label": "Node 2551, Label: 3", "shape": "dot", "size": 10, "title": "Node 2551"}]);
+                  edges = new vis.DataSet([{"from": 269, "title": "Weight: 0.5201", "to": 8, "value": 0.520147442817688}, {"from": 281, "title": "Weight: 0.4762", "to": 8, "value": 0.47617897391319275}, {"from": 1996, "title": "Weight: 0.4926", "to": 8, "value": 0.4926246106624603}, {"from": 281, "title": "Weight: 0.4848", "to": 101, "value": 0.4847591519355774}, {"from": 1358, "title": "Weight: 0.4819", "to": 101, "value": 0.4819165766239166}, {"from": 1589, "title": "Weight: 0.4830", "to": 101, "value": 0.4830286502838135}, {"from": 321, "title": "Weight: 0.5166", "to": 269, "value": 0.5165768265724182}, {"from": 418, "title": "Weight: 0.4746", "to": 269, "value": 0.474640816450119}, {"from": 2543, "title": "Weight: 0.4713", "to": 269, "value": 0.4712545573711395}, {"from": 2551, "title": "Weight: 0.4694", "to": 269, "value": 0.4693771004676819}, {"from": 746, "title": "Weight: 0.4665", "to": 281, "value": 0.4665161669254303}, {"from": 1000, "title": "Weight: 0.5293", "to": 281, "value": 0.5293490290641785}, {"from": 1347, "title": "Weight: 0.4766", "to": 281, "value": 0.47658613324165344}, {"from": 1382, "title": "Weight: 0.5132", "to": 281, "value": 0.5131516456604004}, {"from": 2244, "title": "Weight: 0.4792", "to": 281, "value": 0.4792026877403259}, {"from": 2247, "title": "Weight: 0.5220", "to": 281, "value": 0.5220008492469788}, {"from": 607, "title": "Weight: 0.4857", "to": 298, "value": 0.48569682240486145}, {"from": 1095, "title": "Weight: 0.5202", "to": 298, "value": 0.5201774835586548}, {"from": 1325, "title": "Weight: 0.4757", "to": 298, "value": 0.4756554365158081}, {"from": 928, "title": "Weight: 0.4844", "to": 327, "value": 0.48436546325683594}, {"from": 1325, "title": "Weight: 0.4681", "to": 327, "value": 0.46806737780570984}, {"from": 1996, "title": "Weight: 0.5319", "to": 327, "value": 0.531879723072052}, {"from": 2063, "title": "Weight: 0.4978", "to": 327, "value": 0.4978221654891968}, {"from": 2064, "title": "Weight: 0.5183", "to": 327, "value": 0.5182949900627136}, {"from": 1303, "title": "Weight: 0.5353", "to": 746, "value": 0.5353015661239624}, {"from": 2006, "title": "Weight: 0.4729", "to": 746, "value": 0.47289830446243286}, {"from": 1000, "title": "Weight: 0.5350", "to": 972, "value": 0.5350449681282043}, {"from": 2247, "title": "Weight: 0.5149", "to": 972, "value": 0.5148754119873047}, {"from": 2579, "title": "Weight: 0.4784", "to": 972, "value": 0.4783691167831421}, {"from": 2580, "title": "Weight: 0.4606", "to": 972, "value": 0.46059900522232056}, {"from": 1325, "title": "Weight: 0.5303", "to": 1000, "value": 0.5303225517272949}, {"from": 2543, "title": "Weight: 0.5268", "to": 1000, "value": 0.5268047451972961}, {"from": 230, "title": "Weight: 0.4802", "to": 1095, "value": 0.4801662564277649}, {"from": 1325, "title": "Weight: 0.4788", "to": 1095, "value": 0.4787645637989044}, {"from": 1810, "title": "Weight: 0.5177", "to": 1095, "value": 0.5177446603775024}, {"from": 1986, "title": "Weight: 0.4668", "to": 1095, "value": 0.466760516166687}, {"from": 2613, "title": "Weight: 0.4781", "to": 1095, "value": 0.47812503576278687}, {"from": 2063, "title": "Weight: 0.4769", "to": 1325, "value": 0.47691139578819275}, {"from": 2247, "title": "Weight: 0.4694", "to": 1325, "value": 0.469367653131485}, {"from": 1997, "title": "Weight: 0.5235", "to": 1347, "value": 0.5234973430633545}, {"from": 218, "title": "Weight: 0.5033", "to": 1382, "value": 0.5032781362533569}, {"from": 1502, "title": "Weight: 0.4759", "to": 1382, "value": 0.475892573595047}, {"from": 2176, "title": "Weight: 0.5134", "to": 1382, "value": 0.5134404301643372}, {"from": 2283, "title": "Weight: 0.4905", "to": 1382, "value": 0.49054011702537537}, {"from": 928, "title": "Weight: 0.4700", "to": 2063, "value": 0.4699752926826477}, {"from": 1326, "title": "Weight: 0.4860", "to": 2063, "value": 0.4859597980976105}, {"from": 1996, "title": "Weight: 0.5161", "to": 2063, "value": 0.5161402225494385}, {"from": 2243, "title": "Weight: 0.4742", "to": 2244, "value": 0.47421541810035706}, {"from": 1086, "title": "Weight: 0.5164", "to": 2247, "value": 0.5163771510124207}, {"from": 2246, "title": "Weight: 0.5312", "to": 2247, "value": 0.5311925411224365}, {"from": 2509, "title": "Weight: 0.4733", "to": 2247, "value": 0.47326549887657166}, {"from": 2543, "title": "Weight: 0.4837", "to": 2247, "value": 0.4837307035923004}, {"from": 1086, "title": "Weight: 0.4958", "to": 2579, "value": 0.4958413243293762}, {"from": 1225, "title": "Weight: 0.5273", "to": 2579, "value": 0.5273468494415283}, {"from": 186, "title": "Weight: 0.4743", "to": 2580, "value": 0.47428205609321594}, {"from": 1228, "title": "Weight: 0.5340", "to": 2580, "value": 0.5340338349342346}, {"from": 1536, "title": "Weight: 0.4631", "to": 2580, "value": 0.4631343483924866}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {"physics": {"forceAtlas2Based": {"gravitationalConstant": -50, "centralGravity": 0.01, "springLength": 100, "springConstant": 0.08}, "minVelocity": 0.75, "solver": "forceAtlas2Based"}};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

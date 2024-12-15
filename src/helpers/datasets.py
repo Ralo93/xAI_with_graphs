@@ -20,6 +20,9 @@ class Dataset:
         self.labels = torch.tensor(self.data['node_labels'])
         self.edges = torch.tensor(self.data['edges'])
         
+                # Print available keys for debugging
+        print("Available keys in .npz file:", list(self.data.keys()))
+        
         return
     
 

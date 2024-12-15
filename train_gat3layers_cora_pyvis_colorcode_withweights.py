@@ -118,7 +118,7 @@ def test(mask):
         total = mask.sum().item()
         return correct / total
 
-for epoch in range(1, 201):
+for epoch in range(1, 10):
     train_loss = train()
     train_acc = test(data.train_mask)
     val_acc = test(data.val_mask)
@@ -155,7 +155,7 @@ predicted_label = predict_for_node(gat_model, data, target_node_idx)
 # Initialize the GNNExplainer and Explainer
 explainer = Explainer(
     model=gat_model, 
-    algorithm=GNNExplainer(epochs=200), 
+    algorithm=GNNExplainer(epochs=10), 
     explanation_type='model',
     node_mask_type='attributes',
     edge_mask_type='object',
@@ -228,7 +228,7 @@ def visualize_explanation_subgraph_with_pyvis(explanation, target_node_idx, data
     
     def get_node_color(node_idx):
         # Target node is always black; others depend on their labels
-        return "black" if node_idx == target_node_idx else label_colors.get(data.y[node_idx].item(), "white")
+        return "red" if node_idx == target_node_idx else label_colors.get(data.y[node_idx].item(), "white")
 
     # Add nodes with detailed labels
     node_set = set(important_edges.flatten())
@@ -270,4 +270,4 @@ def visualize_explanation_subgraph_with_pyvis(explanation, target_node_idx, data
 
 
 # Call the function
-visualize_explanation_subgraph_with_pyvis(explanation, target_node_idx, data, threshold=0.5)
+visualize_explanation_subgraph_with_pyvis(explanation, target_node_idx, data, threshold=0.2)

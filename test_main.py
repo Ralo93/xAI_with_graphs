@@ -26,7 +26,7 @@ def test_predict_endpoint(target_node, num_hops=3):
 
     # Extract the subgraph for the target node
     input_data_dict_subgraph = extract_subgraph(
-        node_idx=target_node, num_hops=num_hops, node_features=node_features, edges=edges, labels=labels, take_all=False
+        node_idx=target_node, num_hops=num_hops, node_features=node_features, edges=edges, labels=labels, take_all=True
     )
     print("shapes")
     print(type(input_data_dict_subgraph))  # To confirm it's a dictionary
@@ -69,11 +69,14 @@ def test_predict_endpoint(target_node, num_hops=3):
     print("Prediction Response Received.")
 
     # Extract and process attention weights
-    aw_subgraph = result_subgraph.get('attention_weights', [])
+    attention_weights = result_subgraph.get('attention_weights', [])
     #print(f"Result subgraph: {aw_subgraph}")
 
+    #print("aw")
+    #print(attention_weights)
+
     # Convert to NumPy array for shape inspection
-    array_data_sub = np.array(aw_subgraph)
+    array_data_sub = np.array(attention_weights)
 
     # Get the shape
     print("Shape of the data for SUB:", array_data_sub.shape)
@@ -103,13 +106,13 @@ def test_predict_endpoint(target_node, num_hops=3):
     #probs_predicted_all = result_all['class_probabilities'][target_node_idx_all]
     
     #normalized_analysis_subgraph = analyze_attention_weights(result_subgraph)
-    normalized_analysis_subgraph = analyze_attention_weights(result_subgraph)
+    normalized_analysis_subgraph = analyze_attention_weights_correct(result_subgraph, target_node_idx_subgraph)
 
     #print(normalized_analysis_subgraph)
     #normalized_analysis_all = analyze_attention_weights(result_all)
     #print(normalized_analysis_all)
 
-    visualize_analysis_with_layers(input_data_dict_subgraph, normalized_analysis_subgraph, target_node_idx_subgraph, np.argmax(probs_predicted_sub), target_label)
+    visualize_analysis_with_layers_correct(input_data_dict_subgraph, normalized_analysis_subgraph, target_node_idx_subgraph, np.argmax(probs_predicted_sub), target_label)
 
     return result_subgraph, target_node_idx_subgraph
 
@@ -123,7 +126,7 @@ def test_predict_endpoint(target_node, num_hops=3):
 # Run the test
 if __name__ == "__main__":
 
-    target_node = 1000  # Take 1000 as a good example
+    target_node = 999  # Take 1000 as a good example
     result, target_node_idx = test_predict_endpoint(target_node)
     target_class_probabilities = result['class_probabilities'][target_node_idx]
     predicted_class = target_class_probabilities.index(max(target_class_probabilities))
