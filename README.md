@@ -49,6 +49,12 @@ This project focuses on **explainability with Graph Neural Networks (GNNs)** by 
   - Docker: For containerization and reproducibility.
   - Google Cloud Run: For deploying the application.
 
+## What are homophilic and heterophilic graphs?
+
+![image](https://github.com/user-attachments/assets/d94d65ba-22f6-410d-9af4-a838fc67be11)
+
+In a homophilic environment, nodes have a higher probability to connect via edges if they share the same attributes or class. In contrast, in a heterophilic environment nodes rather connect if they dont share the same class or attributes. Anyway, the graph structure remains the same for message passing graph neural networks, even when attention is used. CoGNN assigns weights (either 0 or 1) on the edges during inference, effectively cutting them out of the topology and therefore transforms a graph from a bidirectional into a directed graph (if the model decides that one direction might not contribute well to the prediction). The model can even completely isolate nodes from information exchange at a given layer, which can be seen on the right.
+
 ## Results
 
 - **GAT** and **CoGNN** architectures demonstrate state of the art performance on homophilic and heterophilic datasets.
