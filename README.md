@@ -81,9 +81,8 @@ The left image shows the embeddings of the node feature vectors in 2D, after run
 
 ## Results
 
-We trained several GAT models with different number of layers (3, 5, 10) on different datasets which were showcased in the papers, including Cora, Roman-Empire, Questions, Amazon-Ratings and Tolokers. For our project we only considered the task of node classification in these different datasets, mainly on heterophilic datasets:
+We trained several **GAT** models with different number of layers (3, 5, 10) on different datasets which were showcased in the papers, including Cora, Roman-Empire, Questions, Amazon-Ratings and Tolokers. For our project we only considered the task of node classification in these different datasets, mainly on heterophilic datasets:
 
-  
 ![image](https://github.com/user-attachments/assets/7bd5608a-f232-4cfc-a788-2be45d8ff665)
 
 Source: [A critical look at the evaluations of GNNs under heterophily: Are we really making progress?](https://arxiv.org/abs/2302.11640)
@@ -105,11 +104,13 @@ For simple datasets, we quickly see huge overfitting to the training set. This i
 
 ![image](https://github.com/user-attachments/assets/60045ba3-de97-4755-a45b-4e4174df838d)
 
-For different datasets like Tolokers the GAT model performed already quite well and we were able to replicate the results from the paper.
+For different datasets like Tolokers the GAT model performed already quite well and we were able to replicate the results from the paper. As Tolokers is especially connected with an average node degree of 88, we can already conclude that the GAT model here effectively is tackling over-squashing by assigning low attention weights to neighboring nodes wich should not contribute to contributions. We observed that the attention weights seem to be very low in those cases, but never 0. Now that I mention it, I will try to plot the distribution of the weights assigned which could be insightful.
   
 - **GAT** and **CoGNN** architectures demonstrate state of the art performance on homophilic and heterophilic datasets.
 - Both models can be adjusted to not only work on the task of node classification, but also link prediction and graph classification.
 - Visualizations bridge the gap between technical and non-technical audience.
+
+## 
 
 ## References
 
