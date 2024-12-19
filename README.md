@@ -114,6 +114,8 @@ For the visualization part, we came to the conclusion that it makes sense to agg
 ![image](https://github.com/user-attachments/assets/7cb42e3e-d997-41dd-8ff6-91868f87be78)
 
 In the case of technicak savy colleagues, stakeholders or regulatory bodys, the different attention weights for a prediction can also be shown per layer and per attention head. One could understand in detail, what contributed to a prediction in quite a detailed manner.
+To have even more fun, we put the whole prediction pipeline for a specified model into a containerized application, put it on Google Clour Run and then call its predictions for specific nodes of our graph into a streamlit application for interactivity.
+
 
 ## Cooperative Graph Neural Network
   
@@ -141,7 +143,6 @@ These are the sucessive layers of the actual model. It uses an embedding layer b
 - Used to transform the discrete action space for the nodes into a differentiable function for backpropagation.
 
 In the original paper the authors use another model to learn and determine the "temperature" of the transformation. I wont go into details here, as we deactivated it in our project, still I want to point out that the authors achieved state of the art by enabling the training for this particular part of the model as well.
-
 
   
 - **GAT** and **CoGNN** architectures demonstrate state of the art performance on homophilic and heterophilic datasets.
