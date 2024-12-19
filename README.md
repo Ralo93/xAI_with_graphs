@@ -155,7 +155,16 @@ On the homophilic dataset with the target node for prediction in red, we would o
 ![image](https://github.com/user-attachments/assets/d19db7d1-395e-4b18-a3c4-15263892ec1e)
 
 In deeper layers, we observe that CoGNN increasingly isolates the target node. In our understanding this makes sense in a homophilic dataset and was also mentioned by the authors of the original paper.
-  
+
+![image](https://github.com/user-attachments/assets/4984c22e-d884-4b73-9d79-0e34c385aac5)
+
+For the heterophilic dataset we observe an opposing trend, even tho not as strict as stated in the original paper. We see that in early layers, the graph is rather disconnected and gains more and more connectivity in later layers.
+
+![image](https://github.com/user-attachments/assets/f35dad85-359c-43d6-ac63-9cdd9a11e534)
+
+This is expected, as the model learned not to "mix-in" too much information from direct neighbors, as they belong to a different class.
+
+
 - **GAT** and **CoGNN** architectures demonstrate state of the art performance on homophilic and heterophilic datasets.
 - Both models can be adjusted to not only work on the task of node classification, but also link prediction and graph classification.
 - Visualizations bridge the gap between technical and non-technical audience.
