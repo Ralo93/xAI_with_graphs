@@ -111,7 +111,7 @@ For different datasets like Tolokers the GAT model performed already quite well 
 
 For the visualization part, we came to the conclusion that it makes sense to aggregate over different attention heads and / or layers, depending on the stakeholders technical understanding. For a high level, simplified visualization, we can show for a prediction the graph which was considered by the model, as well as the contributing parts. This could facilitate a better understanding of the models inner workings or could be a basis for decision making.
 
-
+![image](https://github.com/user-attachments/assets/7cb42e3e-d997-41dd-8ff6-91868f87be78)
 
 In the case of technicak savy colleagues, stakeholders or regulatory bodys, the different attention weights for a prediction can also be shown per layer and per attention head. One could understand in detail, what contributed to a prediction in quite a detailed manner.
 
