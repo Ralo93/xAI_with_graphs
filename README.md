@@ -110,14 +110,14 @@ For CoGNN we implemented our own training pipeline.
 
 I will try to quickly describe the architecture:
 
-CoGNN(
-  (temp_model): TempSoftPlus(
-    (linear_model): ModuleList(
-      (0): GraphLinear(in_features=128, out_features=1, bias=False)
-    )
-    (softplus): Softplus(beta=1, threshold=20)
-  )
-  (env_net): ModuleList(
+CoGNN(  
+  (temp_model): TempSoftPlus(  
+    (linear_model): ModuleList(  
+      (0): GraphLinear(in_features=128, out_features=1, bias=False)  
+    )  
+    (softplus): Softplus(beta=1, threshold=20)  
+  )  
+  (env_net): ModuleList(  
     (0): EncoderLinear(in_features=300, out_features=128, bias=True)
     (1-10): 10 x WeightedGNNConv(128, 128)
     (11): Linear(in_features=128, out_features=18, bias=True)
