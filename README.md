@@ -64,6 +64,16 @@ The cause is that the receptive field of the model grows exponentially with the 
 ### Over-Smoothing
 Means loss of information by updating entities too often - as a consequence the feature vectors for e.g. nodes will look very similar even if the nodes have different classes and therefore they lose their distinct nature.
 
+## How does a GNN work in general
+
+![image](https://github.com/user-attachments/assets/b334ae64-0340-4043-ba93-d8b6b546428d)
+
+The model is able to "cluster" feature vectors (in this case node feature vectors, where different colors belong to different classes) into similar feature embeddings. 
+The left image shows the embeddings of the node feature vectors in 2D, after running a trained model on the data we can see how the model is able to effectively distinguish between classes in the embedding space.
+
+
+
+
 ## Results
 
 - **GAT** and **CoGNN** architectures demonstrate state of the art performance on homophilic and heterophilic datasets.
