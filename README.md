@@ -12,9 +12,9 @@ This project focuses on **explainability with Graph Neural Networks (GNNs)** by 
    - Attention weights are aggregated and visualized to demonstrate explainability.
    - Source:  [Graph Attention Network (GAT)](https://arxiv.org/abs/2310.01267), with code: [GAT on papers with code](https://paperswithcode.com/paper/graph-attention-networks)
 
-2. **Reimplementing the coGNN Architecture**:
+2. **Implementing the CoGNN Architecture**:
 
-   - A cutting-edge GNN model from 2024.
+   - A cutting-edge GNN model from 2024 called "Cooperative Graph Neural Networks".
    - Focused on heterophilic datasets and visualized information flow for enhanced understanding.
    - Source: [CoGNN](https://arxiv.org/abs/2310.01267), with code: [CoGNN on papers with code](https://paperswithcode.com/paper/cooperative-graph-neural-networks)
      
