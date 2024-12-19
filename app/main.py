@@ -17,6 +17,17 @@ class ConfigBase:
         OUTPUT_DIM = 2
         AGG = 'mean'
 
+    class Environment:
+        # Environment Network Configuration
+        INPUT_DIM = 1433
+        OUTPUT_DIM = 7
+        NUM_LAYERS = 3 #3 ALSO CHANGE IN MAIN.PY
+        DROPOUT = 0.2
+        HIDDEN_DIM = 128
+        LAYER_NORM = False
+        SKIP_CONNECTION = True
+        AGG = 'sum'
+
     class Gumbel:
         TEMPERATURE = 0.5
         TAU = 0.01
