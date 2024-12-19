@@ -105,7 +105,7 @@ For simple datasets, we quickly see huge overfitting to the training set. This i
 
 ![image](https://github.com/user-attachments/assets/60045ba3-de97-4755-a45b-4e4174df838d)
 
-For different datasets like Tolokers the GAT model performed quite well and we were able to replicate the results from the paper.
+For different datasets like Tolokers the GAT model performed already quite well and we were able to replicate the results from the paper.
   
 - **GAT** and **CoGNN** architectures demonstrate state of the art performance on homophilic and heterophilic datasets.
 - Both models can be adjusted to not only work on the task of node classification, but also link prediction and graph classification.
