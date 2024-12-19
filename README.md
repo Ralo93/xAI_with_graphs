@@ -86,8 +86,27 @@ We trained several GAT models with different number of layers (3, 5, 10) on diff
   
 ![image](https://github.com/user-attachments/assets/7bd5608a-f232-4cfc-a788-2be45d8ff665)
 
-(Source: [A critical look at the evaluations of GNNs under heterophily: Are we really making progress?](https://arxiv.org/abs/2302.11640)
+Source: [A critical look at the evaluations of GNNs under heterophily: Are we really making progress?](https://arxiv.org/abs/2302.11640)
 
+We trained several models using MLFlow for tracking the hyperparameters, especially:
+  
+- the hidden channels of the GAT layers
+- the number of heads for each layer
+- the dropout rate
+- the learning rate (although we used a scheduler as well)
+- different train dataset sizes (we observed that GNNs work very well with a small amount of training data to correctly classify the other nodes in a graph, but we only checked it on a small dataset)
+
+The best performing models were mostly of different architectures when we evaluated them on the different datasets.
+Note: For the purpose of fast experimentation and prototyping, no specific folds were created during the training, aka. no cross-validation.
+
+![image](https://github.com/user-attachments/assets/2e00826b-db1e-4030-bf30-5bc285cc8df5)
+
+For simple datasets, we quickly see huge overfitting to the training set. This is expected, as our model is already too complex for this easy task. 
+
+![image](https://github.com/user-attachments/assets/60045ba3-de97-4755-a45b-4e4174df838d)
+
+For different datasets like Tolokers the GAT model performed quite well and we were able to replicate the results from the paper.
+  
 - **GAT** and **CoGNN** architectures demonstrate state of the art performance on homophilic and heterophilic datasets.
 - Both models can be adjusted to not only work on the task of node classification, but also link prediction and graph classification.
 - Visualizations bridge the gap between technical and non-technical audience.
