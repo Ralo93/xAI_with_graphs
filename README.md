@@ -1,4 +1,4 @@
-# xAI_with_graphs
+# Explainability with Graphs
 
 ## Overview
 
