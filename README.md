@@ -55,6 +55,15 @@ This project focuses on **explainability with Graph Neural Networks (GNNs)** by 
 
 In a homophilic environment, nodes have a higher probability to connect via edges if they share the same attributes or class. In contrast, in a heterophilic environment nodes rather connect if they dont share the same class or attributes. Anyway, the graph structure remains the same for message passing graph neural networks, even when attention is used. CoGNN assigns weights (either 0 or 1) on the edges during inference, effectively cutting them out of the topology and therefore transforms a graph from a bidirectional into a directed graph (if the model decides that one direction might not contribute well to the prediction). The model can even completely isolate nodes from information exchange at a given layer, which can be seen on the right.
 
+This effectively mitigates two of the most common shortcomings of Graph Neural Networks to some extend: Over-Squashing and Over-Smoothing.
+
+### Over-Squashing
+Means loss of distinct information by forcing  too much information into a single feature vector due to the graphs structure by repeated updates by the model. This often happens in highly connected topologies. 
+The cause is that the receptive field of the model grows exponentially with the number of layers.
+
+### Over-Smoothing
+Means loss of information by updating entities too often - as a consequence the feature vectors for e.g. nodes will look very similar even if the nodes have different classes and therefore they lose their distinct nature.
+
 ## Results
 
 - **GAT** and **CoGNN** architectures demonstrate state of the art performance on homophilic and heterophilic datasets.
