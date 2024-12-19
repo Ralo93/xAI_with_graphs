@@ -2,11 +2,13 @@
 
 ## Overview
 
+Graph algorithms are fundamental in AI systems design because they help model and solve problems involving networks, relationships, and structures. These algorithms enable efficient handling of tasks such as shortest path finding, clustering, and graph traversal, which are essential in areas like recommendation systems, knowledge graph construction, and neural network design.
+
 This project focuses on **explainability with Graph Neural Networks (GNNs)** by implementing and visualizing state-of-the-art architectures. The project is divided into two key areas:
 
 1. **Implementing GAT Architectures**:
 
-   - Designed for both **homophilic** and **heterophilic** datasets.
+   - Designed for both **homophilic** and **heterophilic** datasets (which I will explain later).
    - Attention weights are aggregated and visualized to demonstrate explainability.
    - Source:  [Graph Attention Network (GAT)](https://arxiv.org/abs/2310.01267)
 
