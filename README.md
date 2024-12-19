@@ -172,11 +172,7 @@ This is expected, as the model learned not to "mix-in" too much information from
 - Visualizations bridge the gap between technical and non-technical audience.
 
 
-## References
-
-
-
-## For installation:
+## For installation (deprecated):
 
 - Download repository
 - Create a new venv via conda with "conda create -p .envs/dev_env python=3.12"
