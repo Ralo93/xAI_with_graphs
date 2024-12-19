@@ -110,7 +110,25 @@ For CoGNN we implemented our own training pipeline.
 
 I will try to quickly describe the main parts of its architecture:
 
+**Action Network:**
 
+- Represents the individual behavior of nodes.
+- Generates node-specific actions, determining how a node interacts or cooperates with its neighbors.
+- Focuses on local decision-making, ensuring that each node learns an optimal way to collaborate based on the graph's structure and its features.
+
+
+**Environment Network:**
+
+- Models the shared environment among nodes. This network applies message passing within the predicted topology of the Action Network.
+- Captures global interactions and contextual relationships across the graph.
+- Provides feedback to the action network by reflecting how actions taken by nodes impact the overall performance of the model for a specific task during training.
+
+
+**Gumbel-Softmax Estimator:**
+
+Used to facilitate discrete action selection by nodes while maintaining differentiability for backpropagation.
+Approximates categorical sampling by introducing a continuous relaxation, enabling efficient training of the network.
+Ensures that the action network can learn cooperative behaviors in a stochastic yet differentiable manner.
   
 - **GAT** and **CoGNN** architectures demonstrate state of the art performance on homophilic and heterophilic datasets.
 - Both models can be adjusted to not only work on the task of node classification, but also link prediction and graph classification.
