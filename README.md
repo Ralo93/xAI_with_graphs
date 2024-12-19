@@ -106,8 +106,9 @@ For simple datasets, we quickly see huge overfitting to the training set. This i
 
 For different datasets like Tolokers the GAT model performed already quite well and we were able to replicate the results from the paper. As Tolokers is especially connected with an average node degree of 88, we can already conclude that the GAT model here effectively is tackling over-squashing by assigning low attention weights to neighboring nodes wich should not contribute to predictions. We observed that the attention weights seem to be very low in those cases, but never 0. CoGNN will go into another direction, by assigning weights to edges of either 0 or 1.
 
+## Cooperative Graph Neural Network
+  
 For CoGNN we implemented our own training pipeline. 
-
 I will try to quickly describe the main parts of its architecture:
 
 **Action Network:**
