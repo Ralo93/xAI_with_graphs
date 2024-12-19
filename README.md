@@ -13,7 +13,8 @@ This project focuses on **explainability with Graph Neural Networks (GNNs)** by 
 
    - A cutting-edge GNN model from 2024.
    - Focused on heterophilic datasets and visualized information flow for enhanced understanding.
-
+   - Source: [arXiv:2310.01267](https://arxiv.org/abs/2310.01267)
+     
 ### Goals
 
 - Provide **non-technical stakeholders** with intuitive visualizations of GNN sub-graphs and attention mechanisms.
