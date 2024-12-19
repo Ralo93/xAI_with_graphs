@@ -112,10 +112,11 @@ I will try to quickly describe the main parts of its architecture:
 
 **Action Network:**
 
-- Represents the individual behavior of nodes.
+- Represents the individual behavior of nodes by determining its "state".
 - Generates node-specific actions, determining how a node interacts or cooperates with its neighbors.
 - Focuses on local decision-making, ensuring that each node learns an optimal way to collaborate based on the graph's structure and its features.
 
+Usually a GCN with "MEAN" or "SUM" as the aggregation function and implemented as a NN with only 1 hidden dimension. In 2 parallel steps, the action networks determine the graph topology by forcing 2 rules on each node: Keep incoming edges or discard them - and keep outgoing edges or discard them. A Node which is not allowed to communicate with any neighbor node would then be ISOLATED. The other remaining states are: LISTENING (just keep incoming edges), BROADCASTING (just keep outgoing edges) and STANDARD (keeping all edges).
 
 **Environment Network:**
 
@@ -126,9 +127,10 @@ I will try to quickly describe the main parts of its architecture:
 
 **Gumbel-Softmax Estimator:**
 
-Used to facilitate discrete action selection by nodes while maintaining differentiability for backpropagation.
-Approximates categorical sampling by introducing a continuous relaxation, enabling efficient training of the network.
-Ensures that the action network can learn cooperative behaviors in a stochastic yet differentiable manner.
+- Used to transform the discrete action space for the nodes into a differentiable function for backpropagation.
+
+
+
   
 - **GAT** and **CoGNN** architectures demonstrate state of the art performance on homophilic and heterophilic datasets.
 - Both models can be adjusted to not only work on the task of node classification, but also link prediction and graph classification.
