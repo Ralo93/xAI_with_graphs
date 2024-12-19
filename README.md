@@ -131,6 +131,7 @@ These are the sucessive layers of the actual model. It uses an embedding layer b
 
 - Used to transform the discrete action space for the nodes into a differentiable function for backpropagation.
 
+In the original paper the authors use another model to learn and determine the "temperature" of the transformation. I wont go into details here, as we deactivated it in our project, still I want to point out that the authors achieved state of the art by enabling the training for this particular part of the model as well.
 
 
   
