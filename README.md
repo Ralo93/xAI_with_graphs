@@ -60,7 +60,9 @@ In a homophilic environment, nodes have a higher probability to connect via edge
 
 CoGNN assigns weights (either 0 or 1) on the edges during inference, effectively cutting them out of the topology and therefore transforms a graph from a bidirectional into a directed graph (if the model decides that one direction might not contribute well to the prediction). The model can even completely isolate nodes from information exchange at a given layer, which can be seen on the right.
 
-This effectively mitigates two of the most common shortcomings of Graph Neural Networks to some extend: Over-Squashing and Over-Smoothing.
+Obviously graph are neither completely heterophilic or homophilic, rather this attribute can be seen as a continous spectrum, still there are examples which meet the extreme like a bipartite graph of a recommender systems where only customers connect with items they might buy.
+
+CoGNN effectively mitigates two of the most common shortcomings of Graph Neural Networks, at least to some extend: Over-Squashing and Over-Smoothing.
 
 ### Over-Squashing
 Means loss of distinct information by forcing  too much information into a single feature vector due to the graphs structure by repeated updates by the model. This often happens in highly connected topologies. 
