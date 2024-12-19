@@ -165,11 +165,12 @@ For the heterophilic dataset we observe an opposing trend, even tho not as stric
 This is expected, as the model learned not to "mix-in" too much information from direct neighbors, as they belong to a different class.
 
 
+## Summary
+
 - **GAT** and **CoGNN** architectures demonstrate state of the art performance on homophilic and heterophilic datasets.
 - Both models can be adjusted to not only work on the task of node classification, but also link prediction and graph classification.
 - Visualizations bridge the gap between technical and non-technical audience.
 
-## 
 
 ## References
 
