@@ -108,36 +108,9 @@ For different datasets like Tolokers the GAT model performed already quite well 
 
 For CoGNN we implemented our own training pipeline. 
 
-I will try to quickly describe the architecture:
+I will try to quickly describe the main parts of its architecture:
 
-CoGNN(  
-  (temp_model): TempSoftPlus(  
-    (linear_model): ModuleList(  
-      (0): GraphLinear(in_features=128, out_features=1, bias=False)  
-    )  
-    (softplus): Softplus(beta=1, threshold=20)  
-  )  
-  (env_net): ModuleList(  
-    (0): EncoderLinear(in_features=300, out_features=128, bias=True)
-    (1-10): 10 x WeightedGNNConv(128, 128)
-    (11): Linear(in_features=128, out_features=18, bias=True)
-  )
-  (hidden_layer_norm): Identity()
-  (dropout): Dropout(p=0.2, inplace=False)
-  (in_act_net): ActionNet(
-    (net): ModuleList(
-      (0): WeightedGNNConv(128, 2)
-    )
-    (dropout): Dropout(p=0.2, inplace=False)
-  )
-  (out_act_net): ActionNet(
-    (net): ModuleList(
-      (0): WeightedGNNConv(128, 2)
-    )
-    (dropout): Dropout(p=0.2, inplace=False)
-  )
-  (pooling): BatchIdentity()
-)
+
   
 - **GAT** and **CoGNN** architectures demonstrate state of the art performance on homophilic and heterophilic datasets.
 - Both models can be adjusted to not only work on the task of node classification, but also link prediction and graph classification.
