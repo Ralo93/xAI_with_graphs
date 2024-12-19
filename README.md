@@ -64,7 +64,7 @@ The cause is that the receptive field of the model grows exponentially with the 
 ### Over-Smoothing
 Means loss of information by updating entities too often - as a consequence the feature vectors for e.g. nodes will look very similar even if the nodes have different classes and therefore they lose their distinct nature.
 
-## How does a GNN work in general
+## How do GNNs work in general
 
 ![image](https://github.com/user-attachments/assets/b334ae64-0340-4043-ba93-d8b6b546428d)
 
