@@ -125,6 +125,7 @@ Usually a GCN with "MEAN" or "SUM" as the aggregation function and implemented a
 - Captures global interactions and contextual relationships across the graph.
 - Provides feedback to the action network by reflecting how actions taken by nodes impact the overall performance of the model for a specific task during training.
 
+These are the sucessive layers of the actual model. It uses an embedding layer before entering the iteration of the layers, in each layer of the environment the action networks predict the states of the nodes and transform the graphs topology into a weightend graph, with edge weights being either 0 or 1. The action networks output is then transformed into a probability distribution using the gumbel-softmax estimator and will determine the edge weights. Finally we have another decoder layer for our task at hand, which maps to the different classes of the dataset. Last but not least, a skip connection is used in parallel to the layers.
 
 **Gumbel-Softmax Estimator:**
 
