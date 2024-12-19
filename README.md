@@ -77,9 +77,12 @@ The model is able to "cluster" feature vectors (in this case node feature vector
 The left image shows the embeddings of the node feature vectors in 2D, after running a trained model on the data we can see how the model is able to effectively distinguish between classes in the embedding space.
 
 
-
-
 ## Results
+
+We trained several GAT models with different number of layers (3, 5, 10) on different datasets which were showcased in the papers, including Cora, Roman-Empire, Questions, Amazon-Ratings and Tolokers. For our project we only considered the task of node classification in these different datasets, mainly on heterophilic datasets:
+
+![image](https://github.com/user-attachments/assets/7bd5608a-f232-4cfc-a788-2be45d8ff665)
+(Source: [A critical look at the evaluations of GNNs under heterophily: Are we really making progress?](https://arxiv.org/abs/2302.11640)
 
 - **GAT** and **CoGNN** architectures demonstrate state of the art performance on homophilic and heterophilic datasets.
 - Both models can be adjusted to not only work on the task of node classification, but also link prediction and graph classification.
