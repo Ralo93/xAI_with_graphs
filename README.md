@@ -38,11 +38,21 @@ This project focuses on **explainability with Graph Neural Networks (GNNs)** by 
 - **Frameworks and Libraries**:
   - Streamlit: For interactive visualization.
   - MLFlow: For model tracking and experimentation.
+  - Pytorch Geometric: A library dedicated to graphs using python.
 - **Visualization**:
   - HTML: For embedding dynamic and interactive visualizations.
 - **Deployment**:
   - Docker: For containerization and reproducibility.
   - Google Cloud Run: For deploying the application.
+
+## Results
+
+- **GAT** and **CoGNN** architectures demonstrate state of the art performance on homophilic and heterophilic datasets.
+- Both models can be adjusted to not only work on the task of node classification, but also link prediction and graph classification.
+- Visualizations bridge the gap between technical and non-technical audience.
+
+## References
+
 
 
 ## For installation:
