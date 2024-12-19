@@ -1,5 +1,8 @@
 # Explainability with Graphs
 
+![image](https://github.com/user-attachments/assets/f2e550a7-ccc6-4d5b-b484-0a0835e22892)
+
+
 ## Overview
 
 Graph algorithms are fundamental in AI systems design because they help model and solve problems involving networks, relationships, and structures. These algorithms enable efficient handling of tasks such as shortest path finding, clustering, and graph traversal, which are essential in areas like recommendation systems, knowledge graph construction, and neural network design.
