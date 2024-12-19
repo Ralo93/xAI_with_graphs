@@ -8,12 +8,13 @@ This project focuses on **explainability with Graph Neural Networks (GNNs)** by 
 
    - Designed for both **homophilic** and **heterophilic** datasets.
    - Attention weights are aggregated and visualized to demonstrate explainability.
+   - Source:  [Graph Attention Network (GAT)](https://arxiv.org/abs/2310.01267)
 
 2. **Reimplementing the coGNN Architecture**:
 
    - A cutting-edge GNN model from 2024.
    - Focused on heterophilic datasets and visualized information flow for enhanced understanding.
-   - Source: [arXiv:2310.01267](https://arxiv.org/abs/2310.01267)
+   - Source: [CoGNN](https://arxiv.org/abs/2310.01267)
      
 ### Goals
 
