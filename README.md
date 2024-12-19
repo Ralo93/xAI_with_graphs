@@ -104,7 +104,40 @@ For simple datasets, we quickly see huge overfitting to the training set. This i
 
 ![image](https://github.com/user-attachments/assets/60045ba3-de97-4755-a45b-4e4174df838d)
 
-For different datasets like Tolokers the GAT model performed already quite well and we were able to replicate the results from the paper. As Tolokers is especially connected with an average node degree of 88, we can already conclude that the GAT model here effectively is tackling over-squashing by assigning low attention weights to neighboring nodes wich should not contribute to contributions. We observed that the attention weights seem to be very low in those cases, but never 0. Now that I mention it, I will try to plot the distribution of the weights assigned which could be insightful.
+For different datasets like Tolokers the GAT model performed already quite well and we were able to replicate the results from the paper. As Tolokers is especially connected with an average node degree of 88, we can already conclude that the GAT model here effectively is tackling over-squashing by assigning low attention weights to neighboring nodes wich should not contribute to predictions. We observed that the attention weights seem to be very low in those cases, but never 0. CoGNN will go into another direction, by assigning weights to edges of either 0 or 1.
+
+For CoGNN we implemented our own training pipeline. 
+
+I will try to quickly describe the architecture:
+
+CoGNN(
+  (temp_model): TempSoftPlus(
+    (linear_model): ModuleList(
+      (0): GraphLinear(in_features=128, out_features=1, bias=False)
+    )
+    (softplus): Softplus(beta=1, threshold=20)
+  )
+  (env_net): ModuleList(
+    (0): EncoderLinear(in_features=300, out_features=128, bias=True)
+    (1-10): 10 x WeightedGNNConv(128, 128)
+    (11): Linear(in_features=128, out_features=18, bias=True)
+  )
+  (hidden_layer_norm): Identity()
+  (dropout): Dropout(p=0.2, inplace=False)
+  (in_act_net): ActionNet(
+    (net): ModuleList(
+      (0): WeightedGNNConv(128, 2)
+    )
+    (dropout): Dropout(p=0.2, inplace=False)
+  )
+  (out_act_net): ActionNet(
+    (net): ModuleList(
+      (0): WeightedGNNConv(128, 2)
+    )
+    (dropout): Dropout(p=0.2, inplace=False)
+  )
+  (pooling): BatchIdentity()
+)
   
 - **GAT** and **CoGNN** architectures demonstrate state of the art performance on homophilic and heterophilic datasets.
 - Both models can be adjusted to not only work on the task of node classification, but also link prediction and graph classification.
