@@ -106,6 +106,15 @@ For simple datasets, we quickly see huge overfitting to the training set. This i
 
 For different datasets like Tolokers the GAT model performed already quite well and we were able to replicate the results from the paper. As Tolokers is especially connected with an average node degree of 88, we can already conclude that the GAT model here effectively is tackling over-squashing by assigning low attention weights to neighboring nodes wich should not contribute to predictions. We observed that the attention weights seem to be very low in those cases, but never 0. CoGNN will go into another direction, by assigning weights to edges of either 0 or 1.
 
+
+![image](https://github.com/user-attachments/assets/f2e550a7-ccc6-4d5b-b484-0a0835e22892)
+
+For the visualization part, we came to the conclusion that it makes sense to aggregate over different attention heads and / or layers, depending on the stakeholders technical understanding. For a high level, simplified visualization, we can show for a prediction the graph which was considered by the model, as well as the contributing parts. This could facilitate a better understanding of the models inner workings or could be a basis for decision making.
+
+
+
+In the case of technicak savy colleagues, stakeholders or regulatory bodys, the different attention weights for a prediction can also be shown per layer and per attention head. One could understand in detail, what contributed to a prediction in quite a detailed manner.
+
 ## Cooperative Graph Neural Network
   
 For CoGNN we implemented our own training pipeline. 
