@@ -128,7 +128,7 @@ I will try to quickly describe the main parts of its architecture:
 - Generates node-specific actions, determining how a node interacts or cooperates with its neighbors.
 - Focuses on local decision-making, ensuring that each node learns an optimal way to collaborate based on the graph's structure and its features.
 
-Usually a GCN with "MEAN" or "SUM" as the aggregation function and implemented as a NN with only 1 hidden dimension. In 2 parallel steps, the action networks determine the graph topology by forcing 2 rules on each node: Keep incoming edges or discard them - and keep outgoing edges or discard them. A Node which is not allowed to communicate with any neighbor node would then be ISOLATED. The other remaining states are: LISTENING (just keep incoming edges), BROADCASTING (just keep outgoing edges) and STANDARD (keeping all edges).
+Usually a GCN with "MEAN" or "SUM" as the permutation invariant aggregation function and implemented as a NN with only 1 hidden layer with a size of 128. In 2 parallel steps, the action networks determine the graph topology by forcing 2 rules on each node: Keep incoming edges or discard them - and keep outgoing edges or discard them. A Node which is not allowed to communicate with any neighbor node would then be ISOLATED. The other remaining states are: LISTENING (just keep incoming edges), BROADCASTING (just keep outgoing edges) and STANDARD (keeping all edges).
 
 **Environment Network:**
 
