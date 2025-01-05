@@ -151,7 +151,6 @@ For our visualization aka. explainability part we considered one rather homophil
 
 On the homophilic dataset with the target node for prediction in red, we would observe that CoGNN transforms the original undirected (synonym for bidirectional in this context) graph into a directed one, assigning nodes different states. This is done in every layer.
 
-
 ![image](https://github.com/user-attachments/assets/d19db7d1-395e-4b18-a3c4-15263892ec1e)
 
 In deeper layers, we observe that CoGNN increasingly isolates the target node. In our understanding this makes sense in a homophilic dataset and was also mentioned by the authors of the original paper.
