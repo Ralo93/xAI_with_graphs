@@ -62,7 +62,7 @@ CoGNN assigns weights (either 0 or 1) on the edges during inference, effectively
 
 Obviously graph are neither completely heterophilic or homophilic, rather this attribute can be seen as a continous spectrum, still there are examples which meet the extreme like a bipartite graph of a recommender systems where only customers connect with items they might buy.
 
-CoGNN effectively mitigates two of the most common shortcomings of Graph Neural Networks, at least to some extend: Over-Squashing and Over-Smoothing.
+CoGNN effectively mitigates two of the most common shortcomings of Graph Neural Networks, at least to some extend: Over-Squashing and Over-Smoothing, which I will explain in the following paragraphs.
 
 ### Over-Squashing
 Means loss of distinct information by forcing  too much information into a single feature vector due to the graphs structure by repeated updates by the model. This often happens in highly connected topologies. 
